@@ -5,8 +5,8 @@ use crate::types::{KernelReport, TestCategory, TestRecord, TestResult};
 use chrono::Utc;
 use jupyter_protocol::connection_info::{ConnectionInfo, Transport};
 use jupyter_protocol::messaging::{
-    ExecuteRequest, ExecutionState, JupyterMessage, JupyterMessageContent, KernelInfoReply,
-    KernelInfoRequest, ShutdownRequest, Status,
+    ExecuteRequest, ExecutionState, InputReply, JupyterMessage, JupyterMessageContent,
+    KernelInfoReply, KernelInfoRequest, ReplyStatus, ShutdownRequest, Status,
 };
 use runtimelib::{
     create_client_control_connection, create_client_heartbeat_connection,
@@ -295,6 +295,94 @@ impl KernelUnderTest {
             .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
 
         Ok((reply, iopub_messages))
+    }
+
+    /// Execute code that may request stdin input, providing a mock response.
+    ///
+    /// Returns the execute_reply, IOPub messages, and whether an input_request was received.
+    pub async fn execute_with_stdin(
+        &mut self,
+        code: &str,
+        input_response: &str,
+    ) -> Result<(JupyterMessage, Vec<JupyterMessage>, bool)> {
+        let mut request = ExecuteRequest::new(code.to_string());
+        request.allow_stdin = true;
+        let msg: JupyterMessage = request.into();
+        let msg_id = msg.header.msg_id.clone();
+
+        self.shell
+            .send(msg)
+            .await
+            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+
+        let mut iopub_messages = Vec::new();
+        let mut received_input_request = false;
+        let start = Instant::now();
+
+        // Poll both IOPub and stdin until we see idle
+        loop {
+            if start.elapsed() > self.test_timeout {
+                return Err(HarnessError::Timeout("iopub idle (stdin test)".to_string()));
+            }
+
+            // Check for stdin input_request
+            match timeout(Duration::from_millis(50), self.stdin.read()).await {
+                Ok(Ok(stdin_msg)) => {
+                    if let JupyterMessageContent::InputRequest(_req) = &stdin_msg.content {
+                        received_input_request = true;
+                        // Send input_reply with our mock response
+                        let reply = InputReply {
+                            value: input_response.to_string(),
+                            status: ReplyStatus::Ok,
+                            error: None,
+                        };
+                        let reply_msg = JupyterMessage::new(reply, Some(&stdin_msg));
+                        self.stdin
+                            .send(reply_msg)
+                            .await
+                            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+                    }
+                }
+                Ok(Err(e)) => {
+                    // Log but don't fail on stdin errors
+                    eprintln!("stdin read error: {}", e);
+                }
+                Err(_) => {
+                    // Timeout on stdin read, that's fine
+                }
+            }
+
+            // Check for IOPub messages
+            match timeout(Duration::from_millis(50), self.iopub.read()).await {
+                Ok(Ok(msg)) => {
+                    if msg.parent_header.as_ref().map(|h| &h.msg_id) == Some(&msg_id) {
+                        let is_idle = matches!(
+                            &msg.content,
+                            JupyterMessageContent::Status(Status { execution_state })
+                            if *execution_state == ExecutionState::Idle
+                        );
+                        iopub_messages.push(msg);
+                        if is_idle {
+                            break;
+                        }
+                    }
+                }
+                Ok(Err(e)) => {
+                    return Err(HarnessError::ProtocolError(e.to_string()));
+                }
+                Err(_) => {
+                    // Timeout on this read, continue loop
+                }
+            }
+        }
+
+        // Read the execute_reply
+        let reply = timeout(self.test_timeout, self.shell.read())
+            .await
+            .map_err(|_| HarnessError::Timeout("execute_reply (stdin test)".to_string()))?
+            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+
+        Ok((reply, iopub_messages, received_input_request))
     }
 
     /// Test heartbeat.

@@ -572,9 +572,49 @@ fn test_execute_result(
 // =============================================================================
 
 fn test_stdin_input_request(
-    _kernel: &mut KernelUnderTest,
+    kernel: &mut KernelUnderTest,
 ) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
-    Box::pin(async move { TestResult::Unsupported })
+    Box::pin(async move {
+        let code = kernel.snippets().input_prompt.to_string();
+
+        // Skip if the language doesn't support stdin
+        if code.contains("doesn't support") || code.contains("stdin varies") {
+            return TestResult::Unsupported;
+        }
+
+        let mock_input = "test_input_42";
+
+        match kernel.execute_with_stdin(&code, mock_input).await {
+            Ok((reply, _iopub, received_input_request)) => {
+                if !received_input_request {
+                    return TestResult::fail(
+                        "No input_request received on stdin channel",
+                        FailureKind::UnexpectedContent,
+                    );
+                }
+
+                // Check if execute succeeded
+                if let JupyterMessageContent::ExecuteReply(er) = &reply.content {
+                    if er.status == ReplyStatus::Ok {
+                        // Check if our input appeared in output (for Python: print(input(...)))
+                        // Some kernels echo the result, some don't - we just verify execution completed
+                        TestResult::Pass
+                    } else {
+                        TestResult::fail(
+                            format!("execute_reply status: {:?}", er.status),
+                            FailureKind::KernelError,
+                        )
+                    }
+                } else {
+                    TestResult::fail(
+                        format!("Expected execute_reply, got {:?}", reply.content.message_type()),
+                        FailureKind::UnexpectedMessageType,
+                    )
+                }
+            }
+            Err(e) => TestResult::fail(e.to_string(), FailureKind::HarnessError),
+        }
+    })
 }
 
 fn test_comms_lifecycle(
