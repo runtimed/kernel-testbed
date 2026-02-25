@@ -89,12 +89,12 @@ impl LanguageSnippets {
             completion_setup: "test_variable_for_completion <- 42",
             completion_prefix: "test_variable_for_",
             display_data_code: "IRdisplay::display_html('<b>bold</b>')",
-            update_display_data_code: "// IRkernel doesn't support update_display_data",
+            update_display_data_code: "# IRkernel doesn't support update_display_data",
         }
     }
 
     fn rust() -> Self {
-        // evcxr Rust kernel
+        // evcxr Rust kernel - uses EVCXR_BEGIN_CONTENT/END_CONTENT protocol for rich output
         Self {
             language: "rust".to_string(),
             print_hello: "println!(\"hello\");",
@@ -109,8 +109,8 @@ impl LanguageSnippets {
             completion_var: "test_variable_for_completion",
             completion_setup: "let test_variable_for_completion = 42;",
             completion_prefix: "test_variable_for_",
-            display_data_code: "// evcxr doesn't have display_data helpers",
-            update_display_data_code: "// evcxr doesn't support update_display_data",
+            display_data_code: r#"println!("EVCXR_BEGIN_CONTENT text/html\n<b>bold</b>\nEVCXR_END_CONTENT")"#,
+            update_display_data_code: "// evcxr doesn't support update_display_data (no display_id)",
         }
     }
 
@@ -130,7 +130,7 @@ impl LanguageSnippets {
             completion_setup: "test_variable_for_completion = 42",
             completion_prefix: "test_variable_for_",
             display_data_code: "display(\"text/html\", \"<b>bold</b>\")",
-            update_display_data_code: "// Julia update_display varies by environment",
+            update_display_data_code: "# Julia update_display varies by environment",
         }
     }
 
