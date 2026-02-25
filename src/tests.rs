@@ -126,6 +126,37 @@ fn test_execute_stdout(
     })
 }
 
+fn test_execute_stderr(
+    kernel: &mut KernelUnderTest,
+) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
+    Box::pin(async move {
+        let code = kernel.snippets().print_stderr.to_string();
+        match kernel.execute_and_collect(&code).await {
+            Ok((_, iopub)) => {
+                let has_stderr = iopub.iter().any(|msg| {
+                    matches!(
+                        &msg.content,
+                        JupyterMessageContent::StreamContent(StreamContent {
+                            name: jupyter_protocol::messaging::Stdio::Stderr,
+                            text,
+                        }) if text.contains("error")
+                    )
+                });
+                if has_stderr {
+                    TestResult::Pass
+                } else {
+                    TestResult::Fail { kind: None,
+                        reason: "No stderr containing 'error'".to_string(),
+                    }
+                }
+            }
+            Err(e) => TestResult::Fail { kind: None,
+                reason: e.to_string(),
+            },
+        }
+    })
+}
+
 fn test_execute_reply_ok(
     kernel: &mut KernelUnderTest,
 ) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
@@ -844,6 +875,13 @@ pub fn all_tests() -> Vec<ConformanceTest> {
             description: "Execute code that prints produces stream message on stdout",
             message_type: "execute_request",
             run: test_execute_stdout,
+        },
+        ConformanceTest {
+            name: "execute_stderr",
+            category: TestCategory::Tier1Basic,
+            description: "Execute code that prints to stderr produces stream message",
+            message_type: "stream",
+            run: test_execute_stderr,
         },
         ConformanceTest {
             name: "execute_reply_ok",
