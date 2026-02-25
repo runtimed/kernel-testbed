@@ -95,7 +95,7 @@ jobs:
           pattern: report-*
           merge-multiple: true
 
-      - name: Generate matrix summary
+      - name: Generate detailed report
         run: |
           {
             echo "## Kernel Conformance Matrix"
@@ -118,6 +118,79 @@ jobs:
                 total_tests=$(jq '.results | length' "$report" 2>/dev/null || echo "?")
                 echo "| $kernel | $tier1/$tier1_total | $tier2/$tier2_total | $tier3/$tier3_total | $tier4/$tier4_total | $total/$total_tests |"
               fi
+            done
+
+            echo ""
+            echo "---"
+            echo ""
+
+            # Detailed failure breakdown per kernel
+            for report in reports/*-report.json; do
+              if [ -f "$report" ]; then
+                kernel=$(basename "$report" -report.json)
+                impl=$(jq -r '.implementation // "unknown"' "$report" 2>/dev/null)
+                lang=$(jq -r '.language // "unknown"' "$report" 2>/dev/null)
+                protocol=$(jq -r '.protocol_version // "unknown"' "$report" 2>/dev/null)
+
+                failures=$(jq '[.results[] | select(.result.status != "pass" and .result.status != "unsupported")] | length' "$report" 2>/dev/null || echo "0")
+                skipped=$(jq '[.results[] | select(.result.status == "unsupported")] | length' "$report" 2>/dev/null || echo "0")
+
+                if [ "$failures" != "0" ] || [ "$skipped" != "0" ]; then
+                  echo "<details>"
+                  echo "<summary><strong>$kernel</strong> ($impl) - $failures failures, $skipped skipped</summary>"
+                  echo ""
+                  echo "**Language:** $lang | **Protocol:** $protocol"
+                  echo ""
+
+                  if [ "$failures" != "0" ]; then
+                    echo "#### Failures"
+                    echo ""
+                    echo "| Test | Message Type | Description | Reason |"
+                    echo "|------|--------------|-------------|--------|"
+                    jq -r '.results[] | select(.result.status == "fail" or .result.status == "timeout") | "| \(.name) | `\(.message_type)` | \(.description) | \(.result.reason // "timeout") |"' "$report" 2>/dev/null
+                    echo ""
+                  fi
+
+                  if [ "$skipped" != "0" ]; then
+                    echo "#### Skipped (Not Implemented)"
+                    echo ""
+                    jq -r '.results[] | select(.result.status == "unsupported") | "- **\(.name)**: \(.description)"' "$report" 2>/dev/null
+                    echo ""
+                  fi
+
+                  echo "</details>"
+                  echo ""
+                fi
+              fi
+            done
+
+            # Cross-kernel comparison for failing tests
+            echo "---"
+            echo ""
+            echo "### Test Results by Message Type"
+            echo ""
+            echo "| Test | Message Type |$(for r in reports/*-report.json; do kernel=$(basename "$r" -report.json); echo -n " $kernel |"; done)"
+            echo "|------|--------------|$(for r in reports/*-report.json; do echo -n "--------|"; done)"
+
+            # Get all unique test names
+            all_tests=$(jq -r '.results[].name' reports/*-report.json 2>/dev/null | sort -u)
+            for test in $all_tests; do
+              msg_type=$(jq -r --arg t "$test" '.results[] | select(.name == $t) | .message_type' reports/*-report.json 2>/dev/null | head -1)
+              echo -n "| $test | \`$msg_type\` |"
+              for report in reports/*-report.json; do
+                if [ -f "$report" ]; then
+                  status=$(jq -r --arg t "$test" '.results[] | select(.name == $t) | .result.status' "$report" 2>/dev/null)
+                  case "$status" in
+                    pass) echo -n " ✅ |" ;;
+                    fail) echo -n " ❌ |" ;;
+                    unsupported) echo -n " ⏭️ |" ;;
+                    timeout) echo -n " ⏱️ |" ;;
+                    partial_pass) echo -n " ⚠️ |" ;;
+                    *) echo -n " - |" ;;
+                  esac
+                fi
+              done
+              echo ""
             done
           } | tee -a $GITHUB_STEP_SUMMARY > summary.md
 
