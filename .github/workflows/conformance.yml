@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test-kernel:
     name: Test ${{ matrix.kernel.name }}
@@ -93,16 +97,15 @@ jobs:
 
       - name: Generate matrix summary
         run: |
-          echo "## Kernel Conformance Matrix" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Kernel | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Total |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------|--------|--------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Kernel Conformance Matrix"
+            echo ""
+            echo "| Kernel | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Total |"
+            echo "|--------|--------|--------|--------|--------|-------|"
 
-          for report in reports/*-report.json; do
-            if [ -f "$report" ]; then
-              kernel=$(basename "$report" -report.json)
-              # Extract pass counts per tier using jq
-              if command -v jq &> /dev/null; then
+            for report in reports/*-report.json; do
+              if [ -f "$report" ]; then
+                kernel=$(basename "$report" -report.json)
                 tier1=$(jq '[.results[] | select(.category == "tier1_basic") | select(.result.status == "pass")] | length' "$report" 2>/dev/null || echo "?")
                 tier1_total=$(jq '[.results[] | select(.category == "tier1_basic")] | length' "$report" 2>/dev/null || echo "?")
                 tier2=$(jq '[.results[] | select(.category == "tier2_interactive") | select(.result.status == "pass")] | length' "$report" 2>/dev/null || echo "?")
@@ -113,12 +116,16 @@ jobs:
                 tier4_total=$(jq '[.results[] | select(.category == "tier4_advanced")] | length' "$report" 2>/dev/null || echo "?")
                 total=$(jq '[.results[] | select(.result.status == "pass")] | length' "$report" 2>/dev/null || echo "?")
                 total_tests=$(jq '.results | length' "$report" 2>/dev/null || echo "?")
-                echo "| $kernel | $tier1/$tier1_total | $tier2/$tier2_total | $tier3/$tier3_total | $tier4/$tier4_total | $total/$total_tests |" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "| $kernel | - | - | - | - | - |" >> $GITHUB_STEP_SUMMARY
+                echo "| $kernel | $tier1/$tier1_total | $tier2/$tier2_total | $tier3/$tier3_total | $tier4/$tier4_total | $total/$total_tests |"
               fi
-            fi
-          done
+            done
+          } | tee -a $GITHUB_STEP_SUMMARY > summary.md
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file summary.md
 
       - name: Upload combined reports
         uses: actions/upload-artifact@v4
