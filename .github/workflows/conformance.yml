@@ -32,6 +32,7 @@ jobs:
             kernel-name: deno
           - name: irkernel
             install: |
+              pip install jupyter-client
               Rscript -e "install.packages('IRkernel', repos='https://cloud.r-project.org')"
               Rscript -e "IRkernel::installspec()"
             kernel-name: ir
@@ -43,7 +44,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Set up Python
-        if: matrix.kernel.name == 'ipykernel'
+        if: matrix.kernel.name == 'ipykernel' || matrix.kernel.name == 'irkernel'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
