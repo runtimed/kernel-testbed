@@ -15,7 +15,7 @@ jobs:
       matrix:
         kernel:
           - name: ipykernel
-            install: pip install ipykernel
+            install: pip install ipykernel && python -m ipykernel install --user
             kernel-name: python3
           - name: evcxr
             install: cargo install --locked evcxr_jupyter && evcxr_jupyter --install
