@@ -144,7 +144,7 @@ impl LanguageSnippets {
             completion_var: "testVariableForCompletion",
             completion_setup: "const testVariableForCompletion = 42",
             completion_prefix: "testVariableFor",
-            display_data_code: "Deno.jupyter.html('<b>bold</b>')",
+            display_data_code: "Deno.jupyter.html`<b>bold</b>`",
         }
     }
 
