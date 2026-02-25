@@ -3,9 +3,9 @@
 use crate::harness::{ConformanceTest, KernelUnderTest};
 use crate::types::{FailureKind, TestCategory, TestResult};
 use jupyter_protocol::messaging::{
-    CommInfoRequest, CompleteRequest, ExecutionState, HistoryRequest, InspectRequest,
-    InterruptRequest, IsCompleteReplyStatus, IsCompleteRequest, JupyterMessageContent, ReplyStatus,
-    ShutdownRequest, Status, StreamContent,
+    CommClose, CommId, CommInfoRequest, CommOpen, CompleteRequest, ExecutionState, HistoryRequest,
+    InspectRequest, InterruptRequest, IsCompleteReplyStatus, IsCompleteRequest,
+    JupyterMessageContent, ReplyStatus, ShutdownRequest, Status, StreamContent,
 };
 use std::future::Future;
 use std::pin::Pin;
@@ -618,9 +618,53 @@ fn test_stdin_input_request(
 }
 
 fn test_comms_lifecycle(
-    _kernel: &mut KernelUnderTest,
+    kernel: &mut KernelUnderTest,
 ) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
-    Box::pin(async move { TestResult::Unsupported })
+    Box::pin(async move {
+        // Generate a unique comm_id for this test
+        let comm_id = CommId(format!("test-comm-{}", uuid::Uuid::new_v4()));
+
+        // Open a comm with a test target
+        // Most kernels won't have this registered, but should handle it gracefully
+        let open_msg = CommOpen {
+            comm_id: comm_id.clone(),
+            target_name: "jupyter.kernel_testbed.test".to_string(),
+            data: serde_json::Map::new(),
+            target_module: None,
+        };
+
+        // Send comm_open on shell channel
+        // Note: comm_open doesn't get a direct reply, but we can verify the kernel
+        // handles it by checking IOPub for comm_close (rejection) or doing a
+        // follow-up execute to ensure kernel is still responsive
+        match kernel.send_comm_open(open_msg).await {
+            Ok(rejection) => {
+                if rejection {
+                    // Kernel properly rejected unknown target with comm_close
+                    TestResult::Pass
+                } else {
+                    // Kernel accepted (or silently ignored) the comm_open
+                    // Send comm_close to clean up, then verify kernel still works
+                    let close_msg = CommClose {
+                        comm_id: comm_id.clone(),
+                        data: serde_json::Map::new(),
+                    };
+                    let _ = kernel.send_comm_close(close_msg).await;
+
+                    // Verify kernel is still responsive
+                    let code = kernel.snippets().complete_code.to_string();
+                    match kernel.execute_and_collect(&code).await {
+                        Ok(_) => TestResult::Pass,
+                        Err(e) => TestResult::fail(
+                            format!("Kernel unresponsive after comm: {}", e),
+                            FailureKind::HarnessError,
+                        ),
+                    }
+                }
+            }
+            Err(e) => TestResult::fail(e.to_string(), FailureKind::HarnessError),
+        }
+    })
 }
 
 fn test_interrupt_request(

@@ -5,8 +5,9 @@ use crate::types::{KernelReport, TestCategory, TestRecord, TestResult};
 use chrono::Utc;
 use jupyter_protocol::connection_info::{ConnectionInfo, Transport};
 use jupyter_protocol::messaging::{
-    ExecuteRequest, ExecutionState, InputReply, JupyterMessage, JupyterMessageContent,
-    KernelInfoReply, KernelInfoRequest, ReplyStatus, ShutdownRequest, Status,
+    CommClose, CommOpen, ExecuteRequest, ExecutionState, InputReply, JupyterMessage,
+    JupyterMessageContent, KernelInfoReply, KernelInfoRequest, ReplyStatus, ShutdownRequest,
+    Status,
 };
 use runtimelib::{
     create_client_control_connection, create_client_heartbeat_connection,
@@ -224,6 +225,60 @@ impl KernelUnderTest {
             .map_err(|e| HarnessError::ProtocolError(e.to_string()))
     }
 
+    /// Send a request on shell and wait for reply, also collecting IOPub messages.
+    pub async fn shell_request_with_iopub(
+        &mut self,
+        content: impl Into<JupyterMessageContent>,
+    ) -> Result<(JupyterMessage, Vec<JupyterMessage>)> {
+        let request: JupyterMessage = JupyterMessage::new(content, None);
+        let msg_id = request.header.msg_id.clone();
+
+        self.shell
+            .send(request)
+            .await
+            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+
+        // Collect IOPub messages until idle
+        let mut iopub_messages = Vec::new();
+        let start = Instant::now();
+
+        loop {
+            if start.elapsed() > self.test_timeout {
+                return Err(HarnessError::Timeout("iopub idle".to_string()));
+            }
+
+            match timeout(Duration::from_millis(100), self.iopub.read()).await {
+                Ok(Ok(msg)) => {
+                    if msg.parent_header.as_ref().map(|h| &h.msg_id) == Some(&msg_id) {
+                        let is_idle = matches!(
+                            &msg.content,
+                            JupyterMessageContent::Status(Status { execution_state })
+                            if *execution_state == ExecutionState::Idle
+                        );
+                        iopub_messages.push(msg);
+                        if is_idle {
+                            break;
+                        }
+                    }
+                }
+                Ok(Err(e)) => {
+                    return Err(HarnessError::ProtocolError(e.to_string()));
+                }
+                Err(_) => {
+                    // Timeout on this read, continue
+                }
+            }
+        }
+
+        // Read shell reply
+        let reply = timeout(self.test_timeout, self.shell.read())
+            .await
+            .map_err(|_| HarnessError::Timeout("shell reply".to_string()))?
+            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+
+        Ok((reply, iopub_messages))
+    }
+
     /// Send a request on control and wait for reply.
     pub async fn control_request(
         &mut self,
@@ -396,6 +451,47 @@ impl KernelUnderTest {
     /// Access stdin channel for input tests.
     pub fn stdin_mut(&mut self) -> &mut ClientStdinConnection {
         &mut self.stdin
+    }
+
+    /// Send comm_open and check if kernel rejects it (returns true if rejected).
+    pub async fn send_comm_open(&mut self, msg: CommOpen) -> Result<bool> {
+        let comm_id = msg.comm_id.clone();
+        let request: JupyterMessage = JupyterMessage::new(msg, None);
+
+        self.shell
+            .send(request)
+            .await
+            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+
+        // Brief wait for potential comm_close rejection on IOPub
+        let start = Instant::now();
+        while start.elapsed() < Duration::from_millis(500) {
+            match timeout(Duration::from_millis(100), self.iopub.read()).await {
+                Ok(Ok(msg)) => {
+                    if let JupyterMessageContent::CommClose(close) = &msg.content {
+                        if close.comm_id == comm_id {
+                            return Ok(true); // Rejected
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        Ok(false) // Not rejected (accepted or ignored)
+    }
+
+    /// Send comm_close to clean up a comm.
+    pub async fn send_comm_close(&mut self, msg: CommClose) -> Result<()> {
+        let request: JupyterMessage = JupyterMessage::new(msg, None);
+        self.shell
+            .send(request)
+            .await
+            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+
+        // Brief wait for processing
+        tokio::time::sleep(Duration::from_millis(100)).await;
+        Ok(())
     }
 
     /// Shutdown the kernel cleanly.
