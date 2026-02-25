@@ -33,6 +33,8 @@ jobs:
           - name: irkernel
             install: |
               python -m pip install jupyter
+              export PATH="$HOME/.local/bin:$PATH"
+              jupyter kernelspec --version
               Rscript -e "install.packages('IRkernel', repos='https://cloud.r-project.org')"
               Rscript -e "IRkernel::installspec()"
             kernel-name: ir
