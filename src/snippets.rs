@@ -109,7 +109,7 @@ impl LanguageSnippets {
             completion_var: "test_variable_for_completion",
             completion_setup: "let test_variable_for_completion = 42;",
             completion_prefix: "test_variable_for_",
-            display_data_code: r#"println!("EVCXR_BEGIN_CONTENT text/html\n<b>bold</b>\nEVCXR_END_CONTENT")"#,
+            display_data_code: "// evcxr requires evcxr_display trait impl for display_data",
             update_display_data_code: "// evcxr doesn't support update_display_data (no display_id)",
         }
     }
@@ -150,7 +150,7 @@ impl LanguageSnippets {
             completion_var: "testVariableForCompletion",
             completion_setup: "const testVariableForCompletion = 42",
             completion_prefix: "testVariableFor",
-            display_data_code: "Deno.jupyter.html`<b>bold</b>`",
+            display_data_code: r#"await Deno.jupyter.broadcast("display_data", { data: { "text/html": "<b>bold</b>" }, metadata: {}, transient: {} })"#,
             update_display_data_code: r#"await Deno.jupyter.broadcast("display_data", { data: { "text/html": "<b>initial</b>" }, metadata: {}, transient: { display_id: "test_update" } }); await Deno.jupyter.broadcast("update_display_data", { data: { "text/html": "<b>updated</b>" }, metadata: {}, transient: { display_id: "test_update" } })"#,
         }
     }
