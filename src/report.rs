@@ -50,7 +50,7 @@ pub fn render_terminal(report: &KernelReport) -> String {
             ));
 
             // Show failure reason
-            if let TestResult::Fail { reason } = &record.result {
+            if let TestResult::Fail { reason, .. } = &record.result {
                 output.push_str(&format!("      Reason: {}\n", reason));
             }
             if let TestResult::PartialPass { score, notes } = &record.result {
@@ -113,7 +113,7 @@ pub fn render_markdown(report: &KernelReport) -> String {
     for record in &report.results {
         let result_str = match &record.result {
             TestResult::Pass => "PASS".to_string(),
-            TestResult::Fail { reason } => format!("FAIL: {}", truncate(reason, 30)),
+            TestResult::Fail { reason, .. } => format!("FAIL: {}", truncate(reason, 30)),
             TestResult::Unsupported => "SKIP".to_string(),
             TestResult::Timeout => "TIMEOUT".to_string(),
             TestResult::PartialPass { score, .. } => format!("PARTIAL ({:.0}%)", score * 100.0),

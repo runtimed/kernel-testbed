@@ -29,4 +29,4 @@ pub use harness::{run_conformance_suite, ConformanceTest, KernelUnderTest};
 pub use report::{render_json, render_markdown, render_matrix_json, render_matrix_markdown, render_terminal};
 pub use snippets::LanguageSnippets;
 pub use tests::all_tests;
-pub use types::{ConformanceMatrix, KernelReport, TestCategory, TestRecord, TestResult};
+pub use types::{ConformanceMatrix, FailureKind, KernelReport, TestCategory, TestRecord, TestResult};
