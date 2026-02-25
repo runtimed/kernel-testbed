@@ -25,9 +25,7 @@ fn test_heartbeat_responds(
     Box::pin(async move {
         match kernel.heartbeat().await {
             Ok(()) => TestResult::Pass,
-            Err(e) => TestResult::Fail { kind: None,
-                reason: e.to_string(),
-            },
+            Err(e) => TestResult::fail(e.to_string(), FailureKind::Timeout),
         }
     })
 }
@@ -41,14 +39,16 @@ fn test_kernel_info_reply_valid(
                 if info.status == ReplyStatus::Ok {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail { kind: None,
-                        reason: format!("kernel_info status: {:?}", info.status),
-                    }
+                    TestResult::fail(
+                        format!("kernel_info status: {:?}", info.status),
+                        FailureKind::KernelError,
+                    )
                 }
             }
-            None => TestResult::Fail { kind: None,
-                reason: "No kernel_info received".to_string(),
-            },
+            None => TestResult::fail(
+                "No kernel_info received",
+                FailureKind::Timeout,
+            ),
         }
     })
 }
@@ -137,22 +137,19 @@ fn test_execute_reply_ok(
                     if er.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail { kind: None,
-                            reason: format!("execute_reply status: {:?}", er.status),
-                        }
+                        TestResult::fail(
+                            format!("execute_reply status: {:?}", er.status),
+                            FailureKind::KernelError,
+                        )
                     }
                 } else {
-                    TestResult::Fail { kind: None,
-                        reason: format!(
-                            "Expected execute_reply, got {:?}",
-                            reply.content.message_type()
-                        ),
-                    }
+                    TestResult::fail(
+                        format!("Expected execute_reply, got {:?}", reply.content.message_type()),
+                        FailureKind::UnexpectedMessageType,
+                    )
                 }
             }
-            Err(e) => TestResult::Fail { kind: None,
-                reason: e.to_string(),
-            },
+            Err(e) => TestResult::fail(e.to_string(), FailureKind::HarnessError),
         }
     })
 }
