@@ -541,6 +541,45 @@ fn test_display_data(
     })
 }
 
+fn test_update_display_data(
+    kernel: &mut KernelUnderTest,
+) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
+    Box::pin(async move {
+        let code = kernel.snippets().update_display_data_code.to_string();
+
+        // Skip if the language doesn't support update_display_data
+        if code.contains("doesn't support") || code.contains("not available") || code.contains("varies") {
+            return TestResult::Unsupported;
+        }
+
+        match kernel.execute_and_collect(&code).await {
+            Ok((_, iopub)) => {
+                let has_display = iopub
+                    .iter()
+                    .any(|msg| matches!(&msg.content, JupyterMessageContent::DisplayData(_)));
+
+                let has_update = iopub
+                    .iter()
+                    .any(|msg| matches!(&msg.content, JupyterMessageContent::UpdateDisplayData(_)));
+
+                if has_display && has_update {
+                    TestResult::Pass
+                } else if has_display {
+                    TestResult::PartialPass {
+                        score: 0.5,
+                        notes: "display_data received but no update_display_data".to_string(),
+                    }
+                } else {
+                    TestResult::Unsupported
+                }
+            }
+            Err(e) => TestResult::Fail { kind: None,
+                reason: e.to_string(),
+            },
+        }
+    })
+}
+
 fn test_execute_result(
     kernel: &mut KernelUnderTest,
 ) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
@@ -884,6 +923,13 @@ pub fn all_tests() -> Vec<ConformanceTest> {
             description: "Kernel can produce display_data messages for rich output",
             message_type: "display_data",
             run: test_display_data,
+        },
+        ConformanceTest {
+            name: "update_display_data",
+            category: TestCategory::Tier3RichOutput,
+            description: "Kernel can update existing displays via update_display_data",
+            message_type: "update_display_data",
+            run: test_update_display_data,
         },
         ConformanceTest {
             name: "execute_result",
