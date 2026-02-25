@@ -332,6 +332,10 @@ impl KernelUnderTest {
 pub struct ConformanceTest {
     pub name: &'static str,
     pub category: TestCategory,
+    /// Human-readable description of what this test validates
+    pub description: &'static str,
+    /// The primary protocol message type being tested (e.g., "kernel_info_request")
+    pub message_type: &'static str,
     pub run: fn(&mut KernelUnderTest) -> std::pin::Pin<Box<dyn std::future::Future<Output = TestResult> + Send + '_>>,
 }
 
@@ -369,6 +373,8 @@ pub async fn run_conformance_suite(
         results.push(TestRecord {
             name: test.name.to_string(),
             category: test.category,
+            description: test.description.to_string(),
+            message_type: test.message_type.to_string(),
             result,
             duration: test_start.elapsed(),
         });

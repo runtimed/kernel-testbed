@@ -1,7 +1,7 @@
 //! Protocol conformance tests organized by tier.
 
 use crate::harness::{ConformanceTest, KernelUnderTest};
-use crate::types::{TestCategory, TestResult};
+use crate::types::{FailureKind, TestCategory, TestResult};
 use jupyter_protocol::messaging::{
     CommInfoRequest, CompleteRequest, ExecutionState, HistoryRequest, InspectRequest,
     InterruptRequest, IsCompleteReplyStatus, IsCompleteRequest, JupyterMessageContent, ReplyStatus,
@@ -25,9 +25,7 @@ fn test_heartbeat_responds(
     Box::pin(async move {
         match kernel.heartbeat().await {
             Ok(()) => TestResult::Pass,
-            Err(e) => TestResult::Fail {
-                reason: e.to_string(),
-            },
+            Err(e) => TestResult::fail(e.to_string(), FailureKind::Timeout),
         }
     })
 }
@@ -41,14 +39,16 @@ fn test_kernel_info_reply_valid(
                 if info.status == ReplyStatus::Ok {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
-                        reason: format!("kernel_info status: {:?}", info.status),
-                    }
+                    TestResult::fail(
+                        format!("kernel_info status: {:?}", info.status),
+                        FailureKind::KernelError,
+                    )
                 }
             }
-            None => TestResult::Fail {
-                reason: "No kernel_info received".to_string(),
-            },
+            None => TestResult::fail(
+                "No kernel_info received",
+                FailureKind::Timeout,
+            ),
         }
     })
 }
@@ -62,12 +62,12 @@ fn test_kernel_info_has_language_info(
                 if !info.language_info.name.is_empty() {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: "language_info.name is empty".to_string(),
                     }
                 }
             }
-            None => TestResult::Fail {
+            None => TestResult::Fail { kind: None,
                 reason: "No kernel_info received".to_string(),
             },
         }
@@ -83,12 +83,12 @@ fn test_kernel_info_has_protocol_version(
                 if !info.protocol_version.is_empty() {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: "protocol_version is empty".to_string(),
                     }
                 }
             }
-            None => TestResult::Fail {
+            None => TestResult::Fail { kind: None,
                 reason: "No kernel_info received".to_string(),
             },
         }
@@ -114,12 +114,12 @@ fn test_execute_stdout(
                 if has_stdout {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: "No stdout containing 'hello'".to_string(),
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -137,22 +137,19 @@ fn test_execute_reply_ok(
                     if er.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
-                            reason: format!("execute_reply status: {:?}", er.status),
-                        }
+                        TestResult::fail(
+                            format!("execute_reply status: {:?}", er.status),
+                            FailureKind::KernelError,
+                        )
                     }
                 } else {
-                    TestResult::Fail {
-                        reason: format!(
-                            "Expected execute_reply, got {:?}",
-                            reply.content.message_type()
-                        ),
-                    }
+                    TestResult::fail(
+                        format!("Expected execute_reply, got {:?}", reply.content.message_type()),
+                        FailureKind::UnexpectedMessageType,
+                    )
                 }
             }
-            Err(e) => TestResult::Fail {
-                reason: e.to_string(),
-            },
+            Err(e) => TestResult::fail(e.to_string(), FailureKind::HarnessError),
         }
     })
 }
@@ -186,17 +183,17 @@ fn test_status_busy_idle_lifecycle(
                     if busy_idx < idle_idx {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: "idle came before busy".to_string(),
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!("Missing status: busy={}, idle={}", has_busy, has_idle),
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -216,12 +213,12 @@ fn test_execute_input_broadcast(
                 if has_execute_input {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: "No execute_input broadcast".to_string(),
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -239,12 +236,12 @@ fn test_shutdown_reply(
                     if sr.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: format!("shutdown_reply status: {:?}", sr.status),
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected shutdown_reply, got {:?}",
                             reply.content.message_type()
@@ -252,7 +249,7 @@ fn test_shutdown_reply(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -282,14 +279,14 @@ fn test_complete_request(
                     if cr.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else if cr.status == ReplyStatus::Error {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: format!("complete_reply error: {:?}", cr.error),
                         }
                     } else {
                         TestResult::Pass
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected complete_reply, got {:?}",
                             reply.content.message_type()
@@ -297,7 +294,7 @@ fn test_complete_request(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -324,12 +321,12 @@ fn test_inspect_request(
                     if ir.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: format!("inspect_reply status: {:?}", ir.status),
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected inspect_reply, got {:?}",
                             reply.content.message_type()
@@ -337,7 +334,7 @@ fn test_inspect_request(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -363,7 +360,7 @@ fn test_is_complete_complete(
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected is_complete_reply, got {:?}",
                             reply.content.message_type()
@@ -371,7 +368,7 @@ fn test_is_complete_complete(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -397,7 +394,7 @@ fn test_is_complete_incomplete(
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected is_complete_reply, got {:?}",
                             reply.content.message_type()
@@ -405,7 +402,7 @@ fn test_is_complete_incomplete(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -431,12 +428,12 @@ fn test_history_request(
                     if hr.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: format!("history_reply status: {:?}", hr.status),
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected history_reply, got {:?}",
                             reply.content.message_type()
@@ -444,7 +441,7 @@ fn test_history_request(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -463,12 +460,12 @@ fn test_comm_info_request(
                     if cir.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: format!("comm_info_reply status: {:?}", cir.status),
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected comm_info_reply, got {:?}",
                             reply.content.message_type()
@@ -476,7 +473,7 @@ fn test_comm_info_request(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -504,12 +501,12 @@ fn test_error_handling(
                 if reply_has_error || iopub_has_error {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: "No error in reply or iopub".to_string(),
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -537,7 +534,7 @@ fn test_display_data(
                     TestResult::Unsupported
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -558,12 +555,12 @@ fn test_execute_result(
                 if has_result {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: "No execute_result on iopub".to_string(),
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -597,12 +594,12 @@ fn test_interrupt_request(
                     if ir.status == ReplyStatus::Ok {
                         TestResult::Pass
                     } else {
-                        TestResult::Fail {
+                        TestResult::Fail { kind: None,
                             reason: format!("interrupt_reply status: {:?}", ir.status),
                         }
                     }
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Expected interrupt_reply, got {:?}",
                             reply.content.message_type()
@@ -610,7 +607,7 @@ fn test_interrupt_request(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -642,12 +639,12 @@ fn test_execution_count_increments(
                 if count2 > count1 {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!("Counts didn't increment: {} -> {}", count1, count2),
                     }
                 }
             }
-            (Err(e), _) | (_, Err(e)) => TestResult::Fail {
+            (Err(e), _) | (_, Err(e)) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -667,7 +664,7 @@ fn test_parent_header_correlation(
                 if all_correlated && reply_correlated {
                     TestResult::Pass
                 } else {
-                    TestResult::Fail {
+                    TestResult::Fail { kind: None,
                         reason: format!(
                             "Missing parent_header: iopub={}, reply={}",
                             all_correlated, reply_correlated
@@ -675,7 +672,7 @@ fn test_parent_header_correlation(
                     }
                 }
             }
-            Err(e) => TestResult::Fail {
+            Err(e) => TestResult::Fail { kind: None,
                 reason: e.to_string(),
             },
         }
@@ -693,120 +690,166 @@ pub fn all_tests() -> Vec<ConformanceTest> {
         ConformanceTest {
             name: "heartbeat_responds",
             category: TestCategory::Tier1Basic,
+            description: "Kernel responds to heartbeat ping within timeout",
+            message_type: "heartbeat",
             run: test_heartbeat_responds,
         },
         ConformanceTest {
             name: "kernel_info_reply_valid",
             category: TestCategory::Tier1Basic,
+            description: "Kernel returns valid kernel_info_reply with status ok",
+            message_type: "kernel_info_request",
             run: test_kernel_info_reply_valid,
         },
         ConformanceTest {
             name: "kernel_info_has_language_info",
             category: TestCategory::Tier1Basic,
+            description: "kernel_info_reply contains non-empty language_info.name",
+            message_type: "kernel_info_request",
             run: test_kernel_info_has_language_info,
         },
         ConformanceTest {
             name: "kernel_info_has_protocol_version",
             category: TestCategory::Tier1Basic,
+            description: "kernel_info_reply contains non-empty protocol_version",
+            message_type: "kernel_info_request",
             run: test_kernel_info_has_protocol_version,
         },
         ConformanceTest {
             name: "execute_stdout",
             category: TestCategory::Tier1Basic,
+            description: "Execute code that prints produces stream message on stdout",
+            message_type: "execute_request",
             run: test_execute_stdout,
         },
         ConformanceTest {
             name: "execute_reply_ok",
             category: TestCategory::Tier1Basic,
+            description: "Execute valid code returns execute_reply with status ok",
+            message_type: "execute_request",
             run: test_execute_reply_ok,
         },
         ConformanceTest {
             name: "status_busy_idle_lifecycle",
             category: TestCategory::Tier1Basic,
+            description: "Kernel broadcasts busy then idle status on iopub during execution",
+            message_type: "status",
             run: test_status_busy_idle_lifecycle,
         },
         ConformanceTest {
             name: "execute_input_broadcast",
             category: TestCategory::Tier1Basic,
+            description: "Kernel broadcasts execute_input on iopub when executing",
+            message_type: "execute_input",
             run: test_execute_input_broadcast,
         },
         // Tier 2: Interactive Features
         ConformanceTest {
             name: "complete_request",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel responds to completion request with complete_reply",
+            message_type: "complete_request",
             run: test_complete_request,
         },
         ConformanceTest {
             name: "inspect_request",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel responds to inspection request with inspect_reply",
+            message_type: "inspect_request",
             run: test_inspect_request,
         },
         ConformanceTest {
             name: "is_complete_complete",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel correctly identifies complete code as 'complete'",
+            message_type: "is_complete_request",
             run: test_is_complete_complete,
         },
         ConformanceTest {
             name: "is_complete_incomplete",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel correctly identifies incomplete code as 'incomplete'",
+            message_type: "is_complete_request",
             run: test_is_complete_incomplete,
         },
         ConformanceTest {
             name: "history_request",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel responds to history request with history_reply",
+            message_type: "history_request",
             run: test_history_request,
         },
         ConformanceTest {
             name: "comm_info_request",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel responds to comm_info request with comm_info_reply",
+            message_type: "comm_info_request",
             run: test_comm_info_request,
         },
         ConformanceTest {
             name: "error_handling",
             category: TestCategory::Tier2Interactive,
+            description: "Kernel properly reports errors for invalid syntax",
+            message_type: "execute_request",
             run: test_error_handling,
         },
         // Tier 3: Rich Output
         ConformanceTest {
             name: "display_data",
             category: TestCategory::Tier3RichOutput,
+            description: "Kernel can produce display_data messages for rich output",
+            message_type: "display_data",
             run: test_display_data,
         },
         ConformanceTest {
             name: "execute_result",
             category: TestCategory::Tier3RichOutput,
+            description: "Expression evaluation produces execute_result on iopub",
+            message_type: "execute_result",
             run: test_execute_result,
         },
         // Tier 4: Advanced Features
         ConformanceTest {
             name: "stdin_input_request",
             category: TestCategory::Tier4Advanced,
+            description: "Kernel can request input from frontend via stdin channel",
+            message_type: "input_request",
             run: test_stdin_input_request,
         },
         ConformanceTest {
             name: "comms_lifecycle",
             category: TestCategory::Tier4Advanced,
+            description: "Kernel supports comm open/msg/close lifecycle",
+            message_type: "comm_open",
             run: test_comms_lifecycle,
         },
         ConformanceTest {
             name: "interrupt_request",
             category: TestCategory::Tier4Advanced,
+            description: "Kernel responds to interrupt request on control channel",
+            message_type: "interrupt_request",
             run: test_interrupt_request,
         },
         ConformanceTest {
             name: "execution_count_increments",
             category: TestCategory::Tier4Advanced,
+            description: "Execution count increments with each execute_request",
+            message_type: "execute_request",
             run: test_execution_count_increments,
         },
         ConformanceTest {
             name: "parent_header_correlation",
             category: TestCategory::Tier4Advanced,
+            description: "All response messages contain correct parent_header",
+            message_type: "parent_header",
             run: test_parent_header_correlation,
         },
         // Shutdown should be last
         ConformanceTest {
             name: "shutdown_reply",
             category: TestCategory::Tier1Basic,
+            description: "Kernel responds to shutdown request and terminates cleanly",
+            message_type: "shutdown_request",
             run: test_shutdown_reply,
         },
     ]

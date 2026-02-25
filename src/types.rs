@@ -4,6 +4,48 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
+/// Classification of why a test failed, to help identify root cause.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum FailureKind {
+    /// Kernel didn't respond within timeout - check kernel startup/performance
+    Timeout,
+    /// Failed to parse/deserialize response - likely runtimed protocol issue
+    ProtocolError,
+    /// Kernel responded but with unexpected message type
+    UnexpectedMessageType,
+    /// Kernel responded correctly but content didn't match expectations
+    UnexpectedContent,
+    /// Kernel explicitly returned an error status
+    KernelError,
+    /// Test harness or setup issue
+    HarnessError,
+}
+
+impl FailureKind {
+    pub fn actionable_hint(&self) -> &'static str {
+        match self {
+            FailureKind::Timeout => "Kernel may be slow to start or not responding. Try increasing timeout.",
+            FailureKind::ProtocolError => "Message parsing failed. Check runtimed protocol crate for compatibility.",
+            FailureKind::UnexpectedMessageType => "Kernel sent wrong message type. Check kernel implementation.",
+            FailureKind::UnexpectedContent => "Response format differs from spec. Check kernel implementation.",
+            FailureKind::KernelError => "Kernel reported an error. Check kernel logs for details.",
+            FailureKind::HarnessError => "Test harness issue. Check test setup and dependencies.",
+        }
+    }
+
+    pub fn likely_source(&self) -> &'static str {
+        match self {
+            FailureKind::Timeout => "kernel",
+            FailureKind::ProtocolError => "runtimed",
+            FailureKind::UnexpectedMessageType => "kernel",
+            FailureKind::UnexpectedContent => "kernel",
+            FailureKind::KernelError => "kernel",
+            FailureKind::HarnessError => "testbed",
+        }
+    }
+}
+
 /// Categories of protocol conformance tests, organized by complexity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum TestCategory {
@@ -48,7 +90,11 @@ pub enum TestResult {
     /// Test passed completely
     Pass,
     /// Test failed with a reason
-    Fail { reason: String },
+    Fail {
+        reason: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        kind: Option<FailureKind>,
+    },
     /// Kernel explicitly doesn't support this feature
     Unsupported,
     /// Kernel didn't respond within timeout
@@ -58,6 +104,31 @@ pub enum TestResult {
 }
 
 impl TestResult {
+    /// Create a failure with classification
+    pub fn fail(reason: impl Into<String>, kind: FailureKind) -> Self {
+        TestResult::Fail {
+            reason: reason.into(),
+            kind: Some(kind),
+        }
+    }
+
+    /// Create a simple failure (for backwards compatibility)
+    pub fn fail_simple(reason: impl Into<String>) -> Self {
+        TestResult::Fail {
+            reason: reason.into(),
+            kind: None,
+        }
+    }
+
+    /// Get the failure kind if this is a failure
+    pub fn failure_kind(&self) -> Option<&FailureKind> {
+        match self {
+            TestResult::Fail { kind, .. } => kind.as_ref(),
+            TestResult::Timeout => Some(&FailureKind::Timeout),
+            _ => None,
+        }
+    }
+
     pub fn is_pass(&self) -> bool {
         matches!(self, TestResult::Pass | TestResult::PartialPass { .. })
     }
@@ -90,6 +161,10 @@ pub struct TestRecord {
     pub name: String,
     /// Category/tier of the test
     pub category: TestCategory,
+    /// Human-readable description of what this test validates
+    pub description: String,
+    /// The primary protocol message type being tested
+    pub message_type: String,
     /// Result of the test
     pub result: TestResult,
     /// How long the test took
