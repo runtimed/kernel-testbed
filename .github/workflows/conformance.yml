@@ -32,7 +32,7 @@ jobs:
             kernel-name: deno
           - name: irkernel
             install: |
-              pip install jupyter-client
+              python -m pip install jupyter
               Rscript -e "install.packages('IRkernel', repos='https://cloud.r-project.org')"
               Rscript -e "IRkernel::installspec()"
             kernel-name: ir
