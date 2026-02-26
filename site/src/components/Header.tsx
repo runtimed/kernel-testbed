@@ -20,7 +20,7 @@ export function Header({ generatedAt, commitSha }: HeaderProps) {
     <header className="border-b border-ctp-surface0 bg-ctp-mantle">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
+          <a href="#/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="p-2 rounded-lg bg-ctp-mauve/10">
               <FlaskConical className="h-8 w-8 text-ctp-mauve" />
             </div>
@@ -32,7 +32,7 @@ export function Header({ generatedAt, commitSha }: HeaderProps) {
                 Protocol compliance test results for Jupyter kernels
               </p>
             </div>
-          </div>
+          </a>
           <div className="flex flex-col items-start sm:items-end gap-2">
             {formattedDate && (
               <span className="text-xs text-ctp-subtext0 flex items-center gap-1.5">
