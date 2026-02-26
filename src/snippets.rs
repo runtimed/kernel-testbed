@@ -53,6 +53,7 @@ impl LanguageSnippets {
             "c++" | "cpp" => Self::cpp(),
             "sql" => Self::sql(),
             "lua" => Self::lua(),
+            "haskell" => Self::haskell(),
             _ => Self::generic(&lang),
         }
     }
@@ -289,6 +290,27 @@ xcpp::display(h);"#,
             completion_prefix: "test_variable_for_",
             display_data_code: "print('no rich display')",
             update_display_data_code: "-- Lua doesn't support update_display_data",
+        }
+    }
+
+    fn haskell() -> Self {
+        // Haskell functional language
+        Self {
+            language: "haskell".to_string(),
+            print_hello: "putStrLn \"hello\"",
+            print_stderr: "import System.IO; hPutStrLn stderr \"error\"",
+            simple_expr: "1 + 1",
+            simple_expr_result: "2",
+            incomplete_code: "let x =",
+            complete_code: "let x = 1",
+            syntax_error: "let let",
+            input_prompt: "-- Haskell stdin varies by kernel",
+            sleep_code: "import Control.Concurrent; threadDelay 2000000",
+            completion_var: "testVariableForCompletion",
+            completion_setup: "let testVariableForCompletion = 42",
+            completion_prefix: "testVariableFor",
+            display_data_code: "putStrLn \"no rich display\"",
+            update_display_data_code: "-- Haskell doesn't support update_display_data",
         }
     }
 
