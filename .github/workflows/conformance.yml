@@ -143,12 +143,13 @@ jobs:
           {
             echo "## Kernel Conformance Matrix"
             echo ""
-            echo "| Kernel | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Total |"
-            echo "|--------|--------|--------|--------|--------|-------|"
+            echo "| Kernel | Protocol | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Total |"
+            echo "|--------|----------|--------|--------|--------|--------|-------|"
 
             for report in reports/*-report.json; do
               if [ -f "$report" ]; then
                 kernel=$(basename "$report" -report.json)
+                protocol=$(jq -r '.protocol_version // "?"' "$report" 2>/dev/null || echo "?")
                 tier1=$(jq '[.results[] | select(.category == "tier1_basic") | select(.result.status == "pass")] | length' "$report" 2>/dev/null || echo "?")
                 tier1_total=$(jq '[.results[] | select(.category == "tier1_basic")] | length' "$report" 2>/dev/null || echo "?")
                 tier2=$(jq '[.results[] | select(.category == "tier2_interactive") | select(.result.status == "pass")] | length' "$report" 2>/dev/null || echo "?")
@@ -159,7 +160,7 @@ jobs:
                 tier4_total=$(jq '[.results[] | select(.category == "tier4_advanced")] | length' "$report" 2>/dev/null || echo "?")
                 total=$(jq '[.results[] | select(.result.status == "pass")] | length' "$report" 2>/dev/null || echo "?")
                 total_tests=$(jq '.results | length' "$report" 2>/dev/null || echo "?")
-                echo "| $kernel | $tier1/$tier1_total | $tier2/$tier2_total | $tier3/$tier3_total | $tier4/$tier4_total | $total/$total_tests |"
+                echo "| $kernel | $protocol | $tier1/$tier1_total | $tier2/$tier2_total | $tier3/$tier3_total | $tier4/$tier4_total | $total/$total_tests |"
               fi
             done
 
