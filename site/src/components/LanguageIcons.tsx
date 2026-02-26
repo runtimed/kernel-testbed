@@ -70,6 +70,31 @@ export function RIcon({ className = 'h-5 w-5' }: IconProps) {
   );
 }
 
+export function CppIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className}>
+      <path fill="none" stroke="#89b4fa" strokeLinecap="round" strokeLinejoin="round" d="m 2.556,12.952 c 2.746,2.735 7.198,2.735 9.944,0 l -1.79,-1.783 c -1.757,1.75 -4.607,1.75 -6.364,0 -1.757,-1.75 -1.757,-4.588 0,-6.338 1.757,-1.75 4.607,-1.75 6.364,0 l 0.895,-0.891 0.895,-0.891 c -2.746,-2.735 -7.198,-2.735 -9.944,0 -2.746,2.735 -2.746,7.169 0,9.903 z" clipRule="evenodd" />
+      <path fill="none" stroke="#89b4fa" strokeLinecap="round" strokeLinejoin="round" d="M7.5 6v4M5.514 8H9.513M13.486 6v4M11.5 8h4" />
+    </svg>
+  );
+}
+
+export function SqlIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className}>
+      <path fill="none" stroke="#f9e2af" strokeLinecap="round" strokeLinejoin="round" d="M8 6.5c3.59 0 6.5-1.4 6.5-2.68S11.59 1.5 8 1.5 1.5 2.54 1.5 3.82 4.41 6.5 8 6.5M14.5 8c0 .83-1.24 1.79-3.25 2.2s-4.49.41-6.5 0S1.5 8.83 1.5 8m13 4.18c0 .83-1.24 1.6-3.25 2-2.01.42-4.49.42-6.5 0-2.01-.4-3.25-1.17-3.25-2m0-8.3v8.3m13-8.3v8.3" />
+    </svg>
+  );
+}
+
+export function GoIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className}>
+      <path fill="none" stroke="#74c7ec" strokeLinecap="round" strokeLinejoin="round" d="m15.48 8.06-4.85.48m4.85-.48a4.98 4.98 0 01-4.54 5.42 5 5 0 112.95-8.66l-1.7 1.84a2.5 2.5 0 00-4.18 2.06c.05.57.3 1.1.69 1.51.25.27 1 .83 1.78.82.8-.02 1.58-.25 2.07-.81 0 0 .8-.96.68-1.88M2.5 8.5l-2 .01m1.5 2h1.5m-2-3.99 2-.02" />
+    </svg>
+  );
+}
+
 // Map kernel names/languages to their icons
 export function getLanguageIcon(kernelName: string, language: string): React.ComponentType<IconProps> {
   const name = kernelName.toLowerCase();
@@ -81,6 +106,9 @@ export function getLanguageIcon(kernelName: string, language: string): React.Com
   if (name.includes('scala') || lang === 'scala') return ScalaIcon;
   if (name.includes('deno') || lang === 'typescript') return DenoIcon;
   if (name.includes('ark') || lang === 'r') return RIcon;
+  if (name.includes('cling') || name.includes('xcpp') || lang === 'c++') return CppIcon;
+  if (name.includes('sql') || name.includes('xsql') || lang === 'sql') return SqlIcon;
+  if (name.includes('gonb') || name.includes('gophernotes') || lang === 'go') return GoIcon;
 
   // Default fallback
   return PythonIcon;
