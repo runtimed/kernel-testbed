@@ -47,6 +47,9 @@ jobs:
               ./coursier launch almond -- --install
               rm -f coursier
             kernel-name: scala
+          - name: ijulia
+            install: julia -e 'using Pkg; Pkg.add("IJulia"); using IJulia'
+            kernel-name: julia-1.11
 
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +75,12 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
+      - name: Set up Julia
+        if: matrix.kernel.name == 'ijulia'
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.11'
 
       - name: Install jupyter for Ark
         if: matrix.kernel.name == 'ark'
