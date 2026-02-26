@@ -101,10 +101,10 @@ impl LanguageSnippets {
             completion_prefix: "test_variable_for_",
             // Ark produces display_data natively for graphics - no IRdisplay needed
             display_data_code: "plot(1:10)",
-            // Note: update_display_data may not trigger in batch mode; Ark may optimize to single render
-            update_display_data_code: "plot(1:10); points(5, 5, col='red', pch=19)",
-            // R doesn't typically produce rich execute_result, uses display_data instead
-            rich_execute_result_code: "// R uses display_data for rich output",
+            // Ark sends update_display_data when a new plot replaces the previous one
+            update_display_data_code: "plot(1:5); Sys.sleep(0.1); plot(6:10)",
+            // Ark returns text/html in execute_result for data frames
+            rich_execute_result_code: "data.frame(x = 1:3, y = c('a', 'b', 'c'))",
         }
     }
 
