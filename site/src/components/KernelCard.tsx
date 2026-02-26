@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Cpu, Network } from 'lucide-react';
+import { Network } from 'lucide-react';
+import { getLanguageIcon } from './LanguageIcons';
 import type { KernelReport, TestCategory } from '@/types/report';
 import { getPassedCount, getTotalCount, getTierScore, TIER_DESCRIPTIONS } from '@/types/report';
 
@@ -30,6 +31,7 @@ export function KernelCard({ report, onClick }: KernelCardProps) {
   const passed = getPassedCount(report);
   const total = getTotalCount(report);
   const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
+  const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
 
   return (
     <Card
@@ -40,7 +42,7 @@ export function KernelCard({ report, onClick }: KernelCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-ctp-surface0">
-              <Cpu className="h-5 w-5 text-ctp-lavender" />
+              <LanguageIcon className="h-6 w-6" />
             </div>
             <div>
               <CardTitle className="text-lg text-ctp-text">{report.kernel_name}</CardTitle>

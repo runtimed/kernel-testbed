@@ -7,6 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { TestResultIcon } from './TestResultBadge';
+import { getLanguageIcon } from './LanguageIcons';
 import type { ConformanceMatrix as MatrixType, TestCategory } from '@/types/report';
 import { getAllTestNames, getPassedCount, getTotalCount, getTierScore, TIER_DESCRIPTIONS } from '@/types/report';
 
@@ -32,7 +33,7 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
       <Table>
         <TableHeader>
           <TableRow className="border-ctp-surface0 hover:bg-transparent">
-            <TableHead className="min-w-[120px] text-ctp-subtext0">Kernel</TableHead>
+            <TableHead className="min-w-[150px] text-ctp-subtext0">Kernel</TableHead>
             <TableHead className="text-center text-ctp-subtext0">Protocol</TableHead>
             {TIERS.map((tier) => (
               <TableHead key={tier} className="text-center min-w-[80px] text-ctp-subtext0">
@@ -47,6 +48,7 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
             const passed = getPassedCount(report);
             const total = getTotalCount(report);
             const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
+            const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
 
             return (
               <TableRow
@@ -55,9 +57,12 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
                 onClick={() => onKernelClick?.(report.kernel_name)}
               >
                 <TableCell className="font-medium">
-                  <div>
-                    <div className="text-ctp-text">{report.kernel_name}</div>
-                    <div className="text-xs text-ctp-subtext0">{report.implementation}</div>
+                  <div className="flex items-center gap-2.5">
+                    <LanguageIcon className="h-5 w-5 flex-shrink-0" />
+                    <div>
+                      <div className="text-ctp-text">{report.kernel_name}</div>
+                      <div className="text-xs text-ctp-subtext0">{report.implementation}</div>
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-center font-mono text-sm text-ctp-lavender">
@@ -116,13 +121,17 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
         <TableHeader>
           <TableRow className="border-ctp-surface0 hover:bg-transparent">
             <TableHead className="min-w-[200px] sticky left-0 bg-ctp-mantle text-ctp-subtext0">Test</TableHead>
-            {matrix.reports.map((report) => (
-              <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0">
-                <div className="text-xs">
-                  {report.kernel_name}
-                </div>
-              </TableHead>
-            ))}
+            {matrix.reports.map((report) => {
+              const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
+              return (
+                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0">
+                  <div className="flex flex-col items-center gap-1">
+                    <LanguageIcon className="h-4 w-4" />
+                    <span className="text-xs">{report.kernel_name}</span>
+                  </div>
+                </TableHead>
+              );
+            })}
           </TableRow>
         </TableHeader>
         <TableBody>
