@@ -155,7 +155,7 @@ impl LanguageSnippets {
             incomplete_code: "function foo(",
             complete_code: "const x = 1",
             syntax_error: "function function",
-            input_prompt: "// TS kernel stdin varies by implementation",
+            input_prompt: "prompt('Enter: ')",
             sleep_code: "await new Promise(r => setTimeout(r, 2000))",
             completion_var: "testVariableForCompletion",
             completion_setup: "const testVariableForCompletion = 42",
@@ -176,7 +176,8 @@ impl LanguageSnippets {
             incomplete_code: "func foo(",
             complete_code: "x := 1",
             syntax_error: "func func",
-            input_prompt: "// Go kernel stdin support varies",
+            input_prompt: r#"import "github.com/janpfeifer/gonb/gonbui"
+gonbui.RequestInput("Enter: ", false)"#,
             sleep_code: "time.Sleep(2 * time.Second)",
             completion_var: "testVariableForCompletion",
             completion_setup: "testVariableForCompletion := 42",
@@ -207,7 +208,7 @@ gonbui.UpdateHtml(id, "<b>updated</b>")"#,
             completion_setup: "val testVariableForCompletion = 42",
             completion_prefix: "testVariableFor",
             display_data_code: "kernel.publish.html(\"<b>bold</b>\")",
-            update_display_data_code: "// Almond update_display_data support varies",
+            update_display_data_code: r#"val id = java.util.UUID.randomUUID().toString; kernel.publish.html("<b>initial</b>", id); kernel.publish.updateHtml("<b>updated</b>", id)"#,
         }
     }
 
