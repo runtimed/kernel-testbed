@@ -65,6 +65,8 @@ jobs:
           - name: gonb
             install: |
               go install github.com/janpfeifer/gonb@latest
+              go install golang.org/x/tools/cmd/goimports@latest
+              go install golang.org/x/tools/gopls@latest
               echo "$HOME/go/bin" >> $GITHUB_PATH
               $HOME/go/bin/gonb --install
             kernel-name: gonb
