@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge';
 import { FlaskConical, GitCommit, Calendar } from 'lucide-react';
 
 interface HeaderProps {
@@ -36,10 +35,10 @@ export function Header({ generatedAt, commitSha }: HeaderProps) {
           </div>
           <div className="flex flex-col items-start sm:items-end gap-2">
             {formattedDate && (
-              <Badge variant="outline" className="text-xs gap-1.5 bg-ctp-surface0/50 border-ctp-surface1">
+              <span className="text-xs text-ctp-subtext0 flex items-center gap-1.5">
                 <Calendar className="h-3 w-3 text-ctp-blue" />
-                {formattedDate}
-              </Badge>
+                Last tested {formattedDate}
+              </span>
             )}
             {commitSha && (
               <a
