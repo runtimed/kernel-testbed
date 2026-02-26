@@ -124,9 +124,9 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
             {matrix.reports.map((report) => {
               const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
               return (
-                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0">
-                  <div className="flex flex-col items-center gap-1">
-                    <LanguageIcon className="h-4 w-4" />
+                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <LanguageIcon className="h-5 w-5" />
                     <span className="text-xs">{report.kernel_name}</span>
                   </div>
                 </TableHead>

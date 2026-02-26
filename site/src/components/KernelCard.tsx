@@ -41,9 +41,7 @@ export function KernelCard({ report, onClick }: KernelCardProps) {
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-ctp-surface0">
-              <LanguageIcon className="h-6 w-6" />
-            </div>
+            <LanguageIcon className="h-8 w-8" />
             <div>
               <CardTitle className="text-lg text-ctp-text">{report.kernel_name}</CardTitle>
               <CardDescription className="text-ctp-subtext0">

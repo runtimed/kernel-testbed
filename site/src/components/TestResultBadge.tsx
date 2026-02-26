@@ -109,8 +109,17 @@ export function TestResultBadge({ result, showTooltip = true }: TestResultBadgeP
 
 /** Compact icon-only version for matrix cells */
 export function TestResultIcon({ result }: { result: TestResult }) {
-  // Build tooltip content
-  let tooltipContent: React.ReactNode = <span>{STATUS_LABELS[result.status]}</span>;
+  // Only show tooltip for non-pass statuses
+  if (result.status === 'pass') {
+    return (
+      <span className="inline-flex">
+        <StatusIcon status={result.status} className="h-5 w-5" />
+      </span>
+    );
+  }
+
+  // Build tooltip content for failures and other states
+  let tooltipContent: React.ReactNode;
 
   if (result.status === 'fail') {
     tooltipContent = (
@@ -119,12 +128,23 @@ export function TestResultIcon({ result }: { result: TestResult }) {
         <p className="text-sm text-ctp-subtext0">{result.reason}</p>
       </div>
     );
+  } else if (result.status === 'partial_pass') {
+    tooltipContent = (
+      <div className="max-w-xs">
+        <p className="font-medium text-ctp-yellow">Partial ({Math.round(result.score * 100)}%)</p>
+        <p className="text-sm text-ctp-subtext0">{result.notes}</p>
+      </div>
+    );
+  } else if (result.status === 'timeout') {
+    tooltipContent = <p className="text-ctp-peach">Timeout</p>;
+  } else {
+    tooltipContent = <p className="text-ctp-blue">Skipped</p>;
   }
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className="cursor-default inline-flex">
+        <span className="cursor-help inline-flex">
           <StatusIcon status={result.status} className="h-5 w-5" />
         </span>
       </TooltipTrigger>
