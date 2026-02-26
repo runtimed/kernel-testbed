@@ -95,6 +95,10 @@ jobs:
               pixi run -e default prebuild
               pixi run -e default build
               pixi run -e default install
+              # Copy kernelspec from Pixi env to user Jupyter directory
+              mkdir -p ~/.local/share/jupyter/kernels
+              find /tmp/xeus-haskell -path "*share/jupyter/kernels/xhaskell" -exec cp -r {} ~/.local/share/jupyter/kernels/ \; 2>/dev/null || true
+              ls -la ~/.local/share/jupyter/kernels/ || true
             kernel-name: xhaskell
           - name: xeus-octave
             install: micromamba install -y xeus-octave -c conda-forge
