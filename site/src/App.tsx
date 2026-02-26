@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Header } from '@/components/Header';
 import { KernelCard } from '@/components/KernelCard';
@@ -10,9 +9,55 @@ import { useConformanceData } from '@/hooks/useConformanceData';
 import { ArrowLeft, Table2, Grid3X3, LayoutGrid, Github, AlertCircle } from 'lucide-react';
 import type { KernelReport } from '@/types/report';
 
+type ViewTab = 'summary' | 'matrix' | 'cards';
+
+function parseHash(): { kernel: string | null; tab: ViewTab } {
+  const hash = window.location.hash.slice(1); // Remove #
+  if (hash.startsWith('/kernel/')) {
+    return { kernel: decodeURIComponent(hash.slice(8)), tab: 'summary' };
+  }
+  if (hash === '/matrix') return { kernel: null, tab: 'matrix' };
+  if (hash === '/cards') return { kernel: null, tab: 'cards' };
+  return { kernel: null, tab: 'summary' };
+}
+
 function App() {
   const { data, loading, error } = useConformanceData();
   const [selectedKernel, setSelectedKernel] = useState<KernelReport | null>(null);
+  const [activeTab, setActiveTab] = useState<ViewTab>('summary');
+
+  // Handle URL hash changes
+  useEffect(() => {
+    function handleHashChange() {
+      const { kernel, tab } = parseHash();
+      setActiveTab(tab);
+      if (kernel && data) {
+        const report = data.reports.find((r) => r.kernel_name === kernel);
+        setSelectedKernel(report || null);
+      } else {
+        setSelectedKernel(null);
+      }
+    }
+
+    handleHashChange(); // Initial parse
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [data]);
+
+  // Navigate to kernel
+  function navigateToKernel(name: string) {
+    window.location.hash = `/kernel/${encodeURIComponent(name)}`;
+  }
+
+  // Navigate to tab
+  function navigateToTab(tab: ViewTab) {
+    window.location.hash = tab === 'summary' ? '' : `/${tab}`;
+  }
+
+  // Navigate back
+  function navigateBack() {
+    window.location.hash = activeTab === 'summary' ? '' : `/${activeTab}`;
+  }
 
   if (loading) {
     return (
@@ -60,8 +105,8 @@ function App() {
 
           <main className="container mx-auto px-4 py-8">
             <button
-              onClick={() => setSelectedKernel(null)}
-              className="mb-6 text-sm text-ctp-subtext0 hover:text-ctp-mauve transition-colors flex items-center gap-2"
+              onClick={navigateBack}
+              className="mb-6 text-sm text-ctp-subtext0 hover:text-ctp-text transition-colors flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" /> Back to Matrix
             </button>
@@ -88,57 +133,63 @@ function App() {
         <Header generatedAt={data.generated_at} commitSha={data.commit_sha} />
 
         <main className="container mx-auto px-4 py-8">
-          <Tabs defaultValue="summary" className="space-y-6">
-            <TabsList className="bg-ctp-mantle border border-ctp-surface0">
-              <TabsTrigger
-                value="summary"
-                className="data-[state=active]:bg-ctp-surface0 data-[state=active]:text-ctp-mauve gap-1.5"
+          <div className="space-y-6">
+            {/* Simple tab buttons */}
+            <div className="flex gap-1 text-sm">
+              <button
+                onClick={() => navigateToTab('summary')}
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+                  activeTab === 'summary'
+                    ? 'bg-ctp-surface0 text-ctp-text'
+                    : 'text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0/50'
+                }`}
               >
                 <Table2 className="h-4 w-4" />
                 Summary
-              </TabsTrigger>
-              <TabsTrigger
-                value="matrix"
-                className="data-[state=active]:bg-ctp-surface0 data-[state=active]:text-ctp-mauve gap-1.5"
+              </button>
+              <button
+                onClick={() => navigateToTab('matrix')}
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+                  activeTab === 'matrix'
+                    ? 'bg-ctp-surface0 text-ctp-text'
+                    : 'text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0/50'
+                }`}
               >
                 <Grid3X3 className="h-4 w-4" />
                 Detailed Matrix
-              </TabsTrigger>
-              <TabsTrigger
-                value="cards"
-                className="data-[state=active]:bg-ctp-surface0 data-[state=active]:text-ctp-mauve gap-1.5"
+              </button>
+              <button
+                onClick={() => navigateToTab('cards')}
+                className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-colors ${
+                  activeTab === 'cards'
+                    ? 'bg-ctp-surface0 text-ctp-text'
+                    : 'text-ctp-subtext0 hover:text-ctp-text hover:bg-ctp-surface0/50'
+                }`}
               >
                 <LayoutGrid className="h-4 w-4" />
                 Kernel Cards
-              </TabsTrigger>
-            </TabsList>
+              </button>
+            </div>
 
-            <TabsContent value="summary" className="space-y-6">
-              <SummaryTable
-                matrix={data}
-                onKernelClick={(name) => {
-                  const report = data.reports.find((r) => r.kernel_name === name);
-                  if (report) setSelectedKernel(report);
-                }}
-              />
-            </TabsContent>
+            {/* Tab content */}
+            {activeTab === 'summary' && (
+              <SummaryTable matrix={data} onKernelClick={navigateToKernel} />
+            )}
 
-            <TabsContent value="matrix">
-              <DetailedMatrix matrix={data} />
-            </TabsContent>
+            {activeTab === 'matrix' && <DetailedMatrix matrix={data} />}
 
-            <TabsContent value="cards">
+            {activeTab === 'cards' && (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {data.reports.map((report) => (
                   <KernelCard
                     key={report.kernel_name}
                     report={report}
-                    onClick={() => setSelectedKernel(report)}
+                    onClick={() => navigateToKernel(report.kernel_name)}
                   />
                 ))}
               </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </main>
 
         <footer className="border-t border-ctp-surface0 mt-12 bg-ctp-mantle">
