@@ -149,12 +149,12 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
             return (
               <Fragment key={tier}>
                 {/* Tier header row */}
-                <TableRow className="bg-ctp-surface0/50 hover:bg-ctp-surface0/50 border-ctp-surface0">
-                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0/50 text-ctp-mauve">
+                <TableRow className="bg-ctp-surface0 hover:bg-ctp-surface0 border-ctp-surface0">
+                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0 text-ctp-mauve">
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
                   {matrix.reports.map((report) => (
-                    <TableCell key={report.kernel_name} className="bg-ctp-surface0/50" />
+                    <TableCell key={report.kernel_name} className="bg-ctp-surface0" />
                   ))}
                 </TableRow>
                 {/* Test rows */}
