@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -250,3 +250,57 @@ jobs:
           name: conformance-reports
           path: reports/
           if-no-files-found: warn
+
+  create-release:
+    name: Create Release
+    needs: conformance-matrix
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: reports
+          pattern: report-*
+          merge-multiple: true
+
+      - name: Bundle reports into matrix
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = require('path');
+            const reportsDir = 'reports';
+            const reports = fs.readdirSync(reportsDir)
+              .filter(f => f.endsWith('.json'))
+              .map(f => {
+                try {
+                  return JSON.parse(fs.readFileSync(path.join(reportsDir, f), 'utf8'));
+                } catch (e) {
+                  console.error('Failed to parse', f, e);
+                  return null;
+                }
+              })
+              .filter(Boolean);
+
+            const matrix = {
+              generated_at: new Date().toISOString(),
+              commit_sha: process.env.GITHUB_SHA,
+              reports
+            };
+            fs.writeFileSync('conformance-matrix.json', JSON.stringify(matrix, null, 2));
+            console.log('Created conformance-matrix.json with', reports.length, 'reports');
+          "
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          TAG="conformance-${DATE}-${{ github.run_number }}"
+          gh release create "$TAG" \
+            --title "Conformance Report $DATE" \
+            --notes "Automated conformance test results from commit ${{ github.sha }}" \
+            conformance-matrix.json
