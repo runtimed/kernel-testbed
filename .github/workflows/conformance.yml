@@ -70,6 +70,9 @@ jobs:
               echo "$HOME/go/bin" >> $GITHUB_PATH
               $HOME/go/bin/gonb --install
             kernel-name: gonb
+          - name: xeus-python
+            install: micromamba install -y xeus-python -c conda-forge
+            kernel-name: xpython
 
     steps:
       - uses: actions/checkout@v4
@@ -109,7 +112,7 @@ jobs:
           go-version: '1.22'
 
       - name: Set up Mamba
-        if: matrix.kernel.name == 'xeus-cling' || matrix.kernel.name == 'xeus-sql'
+        if: contains(fromJson('["xeus-cling", "xeus-sql", "xeus-python"]'), matrix.kernel.name)
         uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: 'latest'
@@ -148,7 +151,7 @@ jobs:
         run: ${{ matrix.kernel.install }}
 
       - name: Copy conda kernelspecs to user directory
-        if: matrix.kernel.name == 'xeus-cling' || matrix.kernel.name == 'xeus-sql'
+        if: contains(fromJson('["xeus-cling", "xeus-sql", "xeus-python"]'), matrix.kernel.name)
         run: |
           echo "Looking for kernelspecs..."
           find $MAMBA_ROOT_PREFIX -name "kernel.json" 2>/dev/null || true
