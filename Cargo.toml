@@ -11,9 +11,8 @@ name = "jupyter-kernel-test"
 path = "src/main.rs"
 
 [dependencies]
-# Use the fix branch until PR #282 is merged
-jupyter-protocol = { git = "https://github.com/runtimed/runtimed", branch = "fix-optional-kernel-info-fields" }
-runtimelib = { git = "https://github.com/runtimed/runtimed", branch = "fix-optional-kernel-info-fields", features = ["tokio-runtime", "ring"] }
+jupyter-protocol = { git = "https://github.com/runtimed/runtimed", branch = "main" }
+runtimelib = { git = "https://github.com/runtimed/runtimed", branch = "main", features = ["tokio-runtime", "ring"] }
 
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
