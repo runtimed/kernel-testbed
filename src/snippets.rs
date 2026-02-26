@@ -50,6 +50,8 @@ impl LanguageSnippets {
             "typescript" | "javascript" => Self::typescript(),
             "go" => Self::go(),
             "scala" => Self::scala(),
+            "c++" | "cpp" => Self::cpp(),
+            "sql" => Self::sql(),
             _ => Self::generic(&lang),
         }
     }
@@ -160,7 +162,7 @@ impl LanguageSnippets {
     }
 
     fn go() -> Self {
-        // gonb kernel
+        // gonb kernel - uses gonbui package for rich output
         Self {
             language: "go".to_string(),
             print_hello: "fmt.Println(\"hello\")",
@@ -175,8 +177,12 @@ impl LanguageSnippets {
             completion_var: "testVariableForCompletion",
             completion_setup: "testVariableForCompletion := 42",
             completion_prefix: "testVariableFor",
-            display_data_code: "// gonb display helpers vary",
-            update_display_data_code: "// gonb update_display varies",
+            display_data_code: r#"import "github.com/janpfeifer/gonb/gonbui"
+gonbui.DisplayHtml("<b>bold</b>")"#,
+            update_display_data_code: r#"import "github.com/janpfeifer/gonb/gonbui"
+id := gonbui.UniqueId()
+gonbui.UpdateHtml(id, "<b>initial</b>")
+gonbui.UpdateHtml(id, "<b>updated</b>")"#,
         }
     }
 
@@ -198,6 +204,69 @@ impl LanguageSnippets {
             completion_prefix: "testVariableFor",
             display_data_code: "kernel.publish.html(\"<b>bold</b>\")",
             update_display_data_code: "// Almond update_display_data support varies",
+        }
+    }
+
+    fn cpp() -> Self {
+        // xeus-cling C++ kernel - uses xcpp::display and mime_bundle_repr
+        Self {
+            language: "c++".to_string(),
+            print_hello: r#"#include <iostream>
+std::cout << "hello" << std::endl;"#,
+            print_stderr: r#"#include <iostream>
+std::cerr << "error" << std::endl;"#,
+            simple_expr: "1 + 1",
+            simple_expr_result: "2",
+            incomplete_code: "int foo(",
+            complete_code: "int x = 1;",
+            syntax_error: "int int;",
+            input_prompt: "// C++ kernel stdin varies",
+            sleep_code: r#"#include <thread>
+#include <chrono>
+std::this_thread::sleep_for(std::chrono::seconds(2));"#,
+            completion_var: "test_variable_for_completion",
+            completion_setup: "int test_variable_for_completion = 42;",
+            completion_prefix: "test_variable_for_",
+            display_data_code: r#"#include <string>
+#include "xcpp/xdisplay.hpp"
+
+struct html_content {
+    std::string content;
+};
+
+#include "nlohmann/json.hpp"
+nlohmann::json mime_bundle_repr(const html_content& h) {
+    auto bundle = nlohmann::json::object();
+    bundle["text/html"] = h.content;
+    return bundle;
+}
+
+html_content h{"<b>bold</b>"};
+xcpp::display(h);"#,
+            update_display_data_code: "// xeus-cling update_display_data requires display_id handling",
+        }
+    }
+
+    fn sql() -> Self {
+        // xeus-sql kernel - SQL execution with tabular results
+        Self {
+            language: "sql".to_string(),
+            print_hello: "SELECT 'hello' AS message;",
+            print_stderr: "-- SQL doesn't have stderr; errors come from invalid queries",
+            simple_expr: "SELECT 1 + 1 AS result;",
+            simple_expr_result: "2",
+            incomplete_code: "SELECT * FROM",
+            complete_code: "SELECT 1;",
+            syntax_error: "SELEC * FORM table;",
+            input_prompt: "-- SQL kernel doesn't support stdin",
+            // SQLite has no sleep; this is a workaround using recursive CTE
+            sleep_code: "-- SQL sleep varies by database backend",
+            completion_var: "test_table",
+            completion_setup: "CREATE TABLE IF NOT EXISTS test_table (id INTEGER);",
+            completion_prefix: "test_",
+            // xeus-sql displays query results as tables natively
+            display_data_code: "SELECT 1 AS col1, 2 AS col2, 3 AS col3;",
+            update_display_data_code: "-- SQL doesn't support update_display_data",
         }
     }
 

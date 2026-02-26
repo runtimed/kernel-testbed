@@ -56,6 +56,20 @@ jobs:
           - name: ijulia
             install: julia -e 'using Pkg; Pkg.add("IJulia"); using IJulia'
             kernel-name: julia-1.11
+          - name: xeus-cling
+            install: micromamba install -y xeus-cling -c conda-forge
+            kernel-name: xcpp17
+          - name: xeus-sql
+            install: micromamba install -y xeus-sql -c conda-forge
+            kernel-name: xsql
+          - name: gonb
+            install: |
+              go install github.com/janpfeifer/gonb@latest
+              go install golang.org/x/tools/cmd/goimports@latest
+              go install golang.org/x/tools/gopls@latest
+              echo "$HOME/go/bin" >> $GITHUB_PATH
+              $HOME/go/bin/gonb --install
+            kernel-name: gonb
 
     steps:
       - uses: actions/checkout@v4
@@ -87,6 +101,23 @@ jobs:
         uses: julia-actions/setup-julia@v2
         with:
           version: '1.11'
+
+      - name: Set up Go
+        if: matrix.kernel.name == 'gonb'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Set up Mamba
+        if: matrix.kernel.name == 'xeus-cling' || matrix.kernel.name == 'xeus-sql'
+        uses: mamba-org/setup-micromamba@v2
+        with:
+          micromamba-version: 'latest'
+          environment-name: kernel
+          init-shell: bash
+          create-args: >-
+            python=3.12
+            jupyter_client
 
       - name: Install jupyter for Ark
         if: matrix.kernel.name == 'ark'
