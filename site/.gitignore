@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Local dev data (fetched at deploy time from CI releases)
+public/data/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
