@@ -24,8 +24,17 @@ function getScoreColor(percentage: number): string {
 }
 
 export function TierBreakdown({ report }: TierBreakdownProps) {
+  // Default open tiers that have failures
+  const tiersWithFailures = TIERS.filter((tier) => {
+    const results = getTierResults(report, tier);
+    return results.some((t) => t.result.status === 'fail');
+  });
+
+  // If no failures, default to tier1_basic
+  const defaultOpen = tiersWithFailures.length > 0 ? tiersWithFailures : ['tier1_basic'];
+
   return (
-    <Accordion type="multiple" className="w-full space-y-2" defaultValue={['tier1_basic']}>
+    <Accordion type="multiple" className="w-full space-y-2" defaultValue={defaultOpen}>
       {TIERS.map((tier) => {
         const results = getTierResults(report, tier);
         if (results.length === 0) return null;

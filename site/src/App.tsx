@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Header } from '@/components/Header';
 import { KernelCard } from '@/components/KernelCard';
 import { TierBreakdown } from '@/components/TierBreakdown';
+import { FailureSummary } from '@/components/FailureSummary';
 import { SummaryTable, DetailedMatrix } from '@/components/ConformanceMatrix';
 import { useConformanceData } from '@/hooks/useConformanceData';
 import { ArrowLeft, Table2, Grid3X3, LayoutGrid, Github, AlertCircle } from 'lucide-react';
@@ -118,6 +119,8 @@ function App() {
                 {selectedKernel.protocol_version}
               </p>
             </div>
+
+            <FailureSummary report={selectedKernel} />
 
             <TierBreakdown report={selectedKernel} />
           </main>
