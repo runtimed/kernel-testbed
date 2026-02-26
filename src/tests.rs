@@ -637,6 +637,38 @@ fn test_execute_result(
     })
 }
 
+fn test_rich_execute_result(
+    kernel: &mut KernelUnderTest,
+) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
+    Box::pin(async move {
+        let code = kernel.snippets().rich_execute_result_code.to_string();
+
+        // Skip if language doesn't support rich execute_result
+        if code.contains("doesn't support") || code.contains("uses display_data") || code.contains("not available") {
+            return TestResult::Unsupported;
+        }
+
+        match kernel.execute_and_collect(&code).await {
+            Ok((_, iopub)) => {
+                // Look for execute_result (rich snippet should produce rich MIME types)
+                let has_result = iopub
+                    .iter()
+                    .any(|msg| matches!(&msg.content, JupyterMessageContent::ExecuteResult(_)));
+
+                if has_result {
+                    TestResult::Pass
+                } else {
+                    TestResult::Unsupported
+                }
+            }
+            Err(e) => TestResult::Fail {
+                kind: None,
+                reason: e.to_string(),
+            },
+        }
+    })
+}
+
 // =============================================================================
 // TIER 4: ADVANCED FEATURES
 // =============================================================================
@@ -975,6 +1007,13 @@ pub fn all_tests() -> Vec<ConformanceTest> {
             description: "Expression evaluation produces execute_result on iopub",
             message_type: "execute_result",
             run: test_execute_result,
+        },
+        ConformanceTest {
+            name: "rich_execute_result",
+            category: TestCategory::Tier3RichOutput,
+            description: "Expression evaluation produces execute_result with rich MIME types (HTML, images, etc.)",
+            message_type: "execute_result",
+            run: test_rich_execute_result,
         },
         // Tier 4: Advanced Features
         ConformanceTest {

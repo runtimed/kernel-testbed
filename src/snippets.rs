@@ -36,6 +36,8 @@ pub struct LanguageSnippets {
     pub display_data_code: &'static str,
     /// Code that produces display_data with display_id then updates it
     pub update_display_data_code: &'static str,
+    /// Code that produces execute_result with rich MIME types (text/html, image/*, etc.)
+    pub rich_execute_result_code: &'static str,
 }
 
 impl LanguageSnippets {
@@ -77,6 +79,7 @@ impl LanguageSnippets {
             completion_prefix: "test_variable_for_",
             display_data_code: "from IPython.display import display, HTML; display(HTML('<b>bold</b>'))",
             update_display_data_code: "from IPython.display import display, HTML, update_display; dh = display(HTML('<b>initial</b>'), display_id=True); update_display(HTML('<b>updated</b>'), display_id=dh.display_id)",
+            rich_execute_result_code: "from IPython.display import HTML; HTML('<b>bold</b>')",
         }
     }
 
@@ -100,6 +103,8 @@ impl LanguageSnippets {
             display_data_code: "plot(1:10)",
             // Note: update_display_data may not trigger in batch mode; Ark may optimize to single render
             update_display_data_code: "plot(1:10); points(5, 5, col='red', pch=19)",
+            // R doesn't typically produce rich execute_result, uses display_data instead
+            rich_execute_result_code: "// R uses display_data for rich output",
         }
     }
 
@@ -119,10 +124,17 @@ impl LanguageSnippets {
             completion_var: "test_variable_for_completion",
             completion_setup: "let test_variable_for_completion = 42;",
             completion_prefix: "test_variable_for_",
-            display_data_code: r#"struct Html(&'static str);
-impl Html { fn evcxr_display(&self) { println!("EVCXR_BEGIN_CONTENT text/html\n{}\nEVCXR_END_CONTENT", self.0); } }
-Html("<b>bold</b>").evcxr_display();"#,
+            // evcxr sends rich output via execute_result, not display_data
+            display_data_code: "// evcxr uses execute_result for rich output, not display_data",
             update_display_data_code: "// evcxr doesn't support update_display_data (no display_id)",
+            // evcxr's strength: rich execute_result via evcxr_display trait
+            rich_execute_result_code: r#"pub struct Html(pub &'static str);
+impl Html {
+    pub fn evcxr_display(&self) {
+        println!("EVCXR_BEGIN_CONTENT text/html\n{}\nEVCXR_END_CONTENT", self.0);
+    }
+}
+Html("<b>bold</b>")"#,
         }
     }
 
@@ -143,6 +155,8 @@ Html("<b>bold</b>").evcxr_display();"#,
             completion_prefix: "test_variable_for_",
             display_data_code: "display(\"text/html\", \"<b>bold</b>\")",
             update_display_data_code: "# Julia update_display varies by environment",
+            // Julia can return rich objects that render as HTML
+            rich_execute_result_code: "HTML(\"<b>bold</b>\")",
         }
     }
 
@@ -164,6 +178,7 @@ Html("<b>bold</b>").evcxr_display();"#,
             completion_prefix: "testVariableFor",
             display_data_code: r#"await Deno.jupyter.broadcast("display_data", { data: { "text/html": "<b>bold</b>" }, metadata: {}, transient: {} })"#,
             update_display_data_code: r#"await Deno.jupyter.broadcast("display_data", { data: { "text/html": "<b>initial</b>" }, metadata: {}, transient: { display_id: "test_update" } }); await Deno.jupyter.broadcast("update_display_data", { data: { "text/html": "<b>updated</b>" }, metadata: {}, transient: { display_id: "test_update" } })"#,
+            rich_execute_result_code: r#"Deno.jupyter.html("<b>bold</b>")"#,
         }
     }
 
@@ -190,6 +205,8 @@ gonbui.DisplayHtml("<b>bold</b>")"#,
 id := gonbui.UniqueId()
 gonbui.UpdateHtml(id, "<b>initial</b>")
 gonbui.UpdateHtml(id, "<b>updated</b>")"#,
+            // Go uses display_data for rich output, not execute_result
+            rich_execute_result_code: "// Go uses display_data for rich output",
         }
     }
 
@@ -211,6 +228,8 @@ gonbui.UpdateHtml(id, "<b>updated</b>")"#,
             completion_prefix: "testVariableFor",
             display_data_code: "kernel.publish.html(\"<b>bold</b>\")",
             update_display_data_code: r#"val id = java.util.UUID.randomUUID().toString; kernel.publish.html("<b>initial</b>", id); kernel.publish.updateHtml("<b>updated</b>", id)"#,
+            // Almond can return HTML objects as rich execute_result
+            rich_execute_result_code: "Html(\"<b>bold</b>\")",
         }
     }
 
@@ -251,6 +270,8 @@ nlohmann::json mime_bundle_repr(const html_content& h) {
 html_content h{"<b>bold</b>"};
 xcpp::display(h);"#,
             update_display_data_code: "// xeus-cling update_display_data requires display_id handling",
+            // C++ uses display_data for rich output
+            rich_execute_result_code: "// C++ uses display_data for rich output",
         }
     }
 
@@ -274,6 +295,8 @@ xcpp::display(h);"#,
             // xeus-sql displays query results as tables natively
             display_data_code: "SELECT 1 AS col1, 2 AS col2, 3 AS col3;",
             update_display_data_code: "-- SQL doesn't support update_display_data",
+            // SQL query results come as execute_result with text/html table
+            rich_execute_result_code: "SELECT 1 AS col1, 2 AS col2, 3 AS col3;",
         }
     }
 
@@ -295,6 +318,8 @@ xcpp::display(h);"#,
             completion_prefix: "test_variable_for_",
             display_data_code: "ilua.display.html('<b>bold</b>')",
             update_display_data_code: "-- Lua doesn't support update_display_data",
+            // Lua uses display_data for rich output
+            rich_execute_result_code: "// Lua uses display_data for rich output",
         }
     }
 
@@ -316,6 +341,8 @@ xcpp::display(h);"#,
             completion_prefix: "testVariableFor",
             display_data_code: "putStrLn \"no rich display\"",
             update_display_data_code: "-- Haskell doesn't support update_display_data",
+            // Haskell doesn't have rich execute_result
+            rich_execute_result_code: "// Haskell doesn't support rich execute_result",
         }
     }
 
@@ -337,6 +364,8 @@ xcpp::display(h);"#,
             completion_prefix: "test_variable_for_",
             display_data_code: "% Octave plot() requires display - skip in headless CI",
             update_display_data_code: "% Octave update_display varies by environment",
+            // Octave uses display_data for rich output
+            rich_execute_result_code: "// Octave uses display_data for rich output",
         }
     }
 
@@ -358,6 +387,8 @@ xcpp::display(h);"#,
             completion_prefix: "test_variable_for_",
             display_data_code: r#"#require "jupyter.notebook";; Jupyter_notebook.display "text/html" "<b>bold</b>""#,
             update_display_data_code: "(* OCaml jupyter doesn't support update_display_data *)",
+            // OCaml uses display_data for rich output
+            rich_execute_result_code: "(* OCaml uses display_data for rich output *)",
         }
     }
 
@@ -379,6 +410,7 @@ xcpp::display(h);"#,
             completion_prefix: "x",
             display_data_code: "1",
             update_display_data_code: "// update_display not available",
+            rich_execute_result_code: "// rich execute_result not available",
         }
     }
 }
