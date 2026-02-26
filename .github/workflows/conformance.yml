@@ -147,6 +147,10 @@ jobs:
       - name: Install kernel
         run: ${{ matrix.kernel.install }}
 
+      - name: Set JUPYTER_PATH for conda kernels
+        if: matrix.kernel.name == 'xeus-cling' || matrix.kernel.name == 'xeus-sql'
+        run: echo "JUPYTER_PATH=$MAMBA_ROOT_PREFIX/envs/kernel/share/jupyter" >> $GITHUB_ENV
+
       - name: Build test suite
         run: cargo build --release
 
