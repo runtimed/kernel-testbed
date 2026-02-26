@@ -33,9 +33,10 @@ jobs:
           - name: irkernel
             install: |
               python -m pip install jupyter
-              which jupyter
+              JUPYTER_PATH=$(which jupyter)
+              echo "Jupyter path: $JUPYTER_PATH"
               Rscript -e "install.packages('IRkernel', repos='https://cloud.r-project.org')"
-              Rscript -e "IRkernel::installspec()"
+              Rscript -e "print(Sys.getenv('PATH')); system('which jupyter'); IRkernel::installspec()"
             kernel-name: ir
 
     steps:
