@@ -30,6 +30,16 @@ jobs:
               echo "$HOME/.deno/bin" >> $GITHUB_PATH
               $HOME/.deno/bin/deno jupyter --install
             kernel-name: deno
+          - name: ark
+            install: |
+              # Download Ark binary from GitHub releases
+              curl -fsSL -o ark.zip https://github.com/posit-dev/ark/releases/download/0.1.232/ark-0.1.232-linux-x64.zip
+              unzip -o ark.zip
+              chmod +x ark
+              sudo mv ark /usr/local/bin/
+              # Install kernel
+              ark --install
+            kernel-name: ark
 
     steps:
       - uses: actions/checkout@v4
@@ -38,10 +48,20 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Set up Python
-        if: matrix.kernel.name == 'ipykernel'
+        if: matrix.kernel.name == 'ipykernel' || matrix.kernel.name == 'ark'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Set up R
+        if: matrix.kernel.name == 'ark'
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4"
+
+      - name: Install jupyter for Ark
+        if: matrix.kernel.name == 'ark'
+        run: python -m pip install jupyter
 
       - name: Cache cargo
         uses: actions/cache@v4
