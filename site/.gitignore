@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Next.js
+.next/
+out/
+
 # Local dev data (fetched at deploy time from CI releases)
 public/data/
 

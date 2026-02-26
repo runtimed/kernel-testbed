@@ -20,7 +20,7 @@ export function Header({ generatedAt, commitSha }: HeaderProps) {
     <header className="border-b border-ctp-surface0 bg-ctp-mantle">
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <a href="#/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <a href="/kernel-testbed/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="p-2 rounded-lg bg-ctp-mauve/10">
               <FlaskConical className="h-8 w-8 text-ctp-mauve" />
             </div>

@@ -8,7 +8,7 @@ const REPO = 'runtimed/kernel-testbed';
 const GITHUB_API = 'https://api.github.com';
 
 // Path to embedded data (included at build time from latest release)
-const EMBEDDED_DATA_PATH = import.meta.env.BASE_URL + 'data/conformance-matrix.json';
+const EMBEDDED_DATA_PATH = '/kernel-testbed/data/conformance-matrix.json';
 
 interface GitHubRelease {
   id: number;
