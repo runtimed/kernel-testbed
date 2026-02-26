@@ -99,6 +99,14 @@ jobs:
           - name: xeus-octave
             install: micromamba install -y xeus-octave -c conda-forge
             kernel-name: xoctave
+          - name: ocaml-jupyter
+            install: |
+              eval $(opam env)
+              opam install -y jupyter
+              echo '#use "topfind";;' >> ~/.ocamlinit
+              ocaml-jupyter-opam-genspec
+              jupyter kernelspec install --user --name ocaml-jupyter "$(opam var share)/jupyter"
+            kernel-name: ocaml-jupyter
 
     steps:
       - uses: actions/checkout@v4
@@ -147,6 +155,18 @@ jobs:
           create-args: >-
             python=3.12
             jupyter_client
+
+      - name: Set up OCaml
+        if: matrix.kernel.name == 'ocaml-jupyter'
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: '5.2'
+
+      - name: Install OCaml dependencies
+        if: matrix.kernel.name == 'ocaml-jupyter'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libzmq5-dev
 
       - name: Install jupyter for Ark
         if: matrix.kernel.name == 'ark'

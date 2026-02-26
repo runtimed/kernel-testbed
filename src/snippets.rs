@@ -55,6 +55,7 @@ impl LanguageSnippets {
             "lua" => Self::lua(),
             "haskell" => Self::haskell(),
             "octave" => Self::octave(),
+            "ocaml" => Self::ocaml(),
             _ => Self::generic(&lang),
         }
     }
@@ -333,6 +334,27 @@ xcpp::display(h);"#,
             completion_prefix: "test_variable_for_",
             display_data_code: "% Octave plot() requires display - skip in headless CI",
             update_display_data_code: "% Octave update_display varies by environment",
+        }
+    }
+
+    fn ocaml() -> Self {
+        // OCaml Jupyter kernel - uses Jupyter_notebook module for rich output
+        Self {
+            language: "ocaml".to_string(),
+            print_hello: r#"print_endline "hello""#,
+            print_stderr: r#"prerr_endline "error""#,
+            simple_expr: "1 + 1",
+            simple_expr_result: "2",
+            incomplete_code: "let foo (",
+            complete_code: "let x = 1",
+            syntax_error: "let let",
+            input_prompt: "read_line ()",
+            sleep_code: "Unix.sleep 2",
+            completion_var: "test_variable_for_completion",
+            completion_setup: "let test_variable_for_completion = 42",
+            completion_prefix: "test_variable_for_",
+            display_data_code: r#"#require "jupyter.notebook";; Jupyter_notebook.display "text/html" "<b>bold</b>""#,
+            update_display_data_code: "(* OCaml jupyter doesn't support update_display_data *)",
         }
     }
 
