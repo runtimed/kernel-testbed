@@ -524,20 +524,46 @@ pub struct ConformanceTest {
 }
 
 /// Run the full conformance suite against a kernel.
+///
+/// Returns a report even if the kernel fails during startup - in that case,
+/// the report will have `startup_error` set and a single failed test record.
 pub async fn run_conformance_suite(
     kernelspec: KernelspecDir,
     tiers: &[TestCategory],
     test_timeout: Duration,
     tests: &[ConformanceTest],
-) -> Result<KernelReport> {
+) -> KernelReport {
     let start = Instant::now();
     let kernel_name = kernelspec.kernel_name.clone();
+    let language = kernelspec.kernelspec.language.clone();
 
-    let mut kernel = KernelUnderTest::launch(kernelspec, test_timeout).await?;
+    // Try to launch the kernel
+    let mut kernel = match KernelUnderTest::launch(kernelspec, test_timeout).await {
+        Ok(k) => k,
+        Err(e) => {
+            // Kernel failed during startup - return a partial report
+            return KernelReport::new_failed_at_startup(
+                kernel_name,
+                language,
+                e.to_string(),
+                start.elapsed(),
+            );
+        }
+    };
 
-    let kernel_info = kernel
-        .kernel_info()
-        .ok_or_else(|| HarnessError::ProtocolError("No kernel info".to_string()))?;
+    let kernel_info = match kernel.kernel_info() {
+        Some(info) => info,
+        None => {
+            // Shouldn't happen since launch succeeded, but handle gracefully
+            let _ = kernel.shutdown().await;
+            return KernelReport::new_failed_at_startup(
+                kernel_name,
+                language,
+                "No kernel info after launch".to_string(),
+                start.elapsed(),
+            );
+        }
+    };
 
     let language = kernel_info.language_info.name.clone();
     let implementation = kernel_info.implementation.clone();
@@ -564,10 +590,10 @@ pub async fn run_conformance_suite(
         });
     }
 
-    // Shutdown kernel
-    kernel.shutdown().await?;
+    // Shutdown kernel (ignore errors during shutdown)
+    let _ = kernel.shutdown().await;
 
-    Ok(KernelReport {
+    KernelReport {
         kernel_name,
         language,
         implementation,
@@ -575,5 +601,6 @@ pub async fn run_conformance_suite(
         results,
         timestamp: Utc::now(),
         total_duration: start.elapsed(),
-    })
+        startup_error: None,
+    }
 }

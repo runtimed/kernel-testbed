@@ -1,6 +1,6 @@
-import { AlertTriangle, XCircle, CheckCircle2, ChevronRight } from 'lucide-react';
+import { AlertTriangle, XCircle, CheckCircle2, ChevronRight, Skull } from 'lucide-react';
 import type { KernelReport, TestRecord } from '@/types/report';
-import { getPassedCount, getTotalCount } from '@/types/report';
+import { getPassedCount, getTotalCount, hasStartupError } from '@/types/report';
 
 interface FailureSummaryProps {
   report: KernelReport;
@@ -25,6 +25,30 @@ function groupFailuresByReason(report: KernelReport): Map<string, TestRecord[]> 
 }
 
 export function FailureSummary({ report }: FailureSummaryProps) {
+  // Check for startup error first - this is a critical failure
+  if (hasStartupError(report)) {
+    return (
+      <div className="rounded-lg border border-ctp-red/50 bg-ctp-red/10 p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <Skull className="h-6 w-6 text-ctp-red flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium text-ctp-red">Kernel failed during startup</h3>
+            <p className="text-sm text-ctp-subtext0 mt-1">
+              The kernel could not complete initialization. No tests were run.
+            </p>
+            <div className="mt-3 p-3 rounded bg-ctp-surface0/50 font-mono text-sm text-ctp-red">
+              {report.startup_error}
+            </div>
+            <p className="mt-3 text-xs text-ctp-subtext0">
+              This usually indicates a fundamental protocol compatibility issue.
+              Check that the kernel sends valid Jupyter protocol messages.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const passed = getPassedCount(report);
   const total = getTotalCount(report);
   const failed = total - passed;
