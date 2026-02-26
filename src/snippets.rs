@@ -119,9 +119,8 @@ impl LanguageSnippets {
             completion_var: "test_variable_for_completion",
             completion_setup: "let test_variable_for_completion = 42;",
             completion_prefix: "test_variable_for_",
-            display_data_code: r#"struct Html(&'static str);
-impl Html { fn evcxr_display(&self) { println!("EVCXR_BEGIN_CONTENT text/html\n{}\nEVCXR_END_CONTENT", self.0); } }
-Html("<b>bold</b>").evcxr_display();"#,
+            // evcxr sends rich output via execute_result, not display_data
+            display_data_code: "// evcxr uses execute_result for rich output, not display_data",
             update_display_data_code: "// evcxr doesn't support update_display_data (no display_id)",
         }
     }
