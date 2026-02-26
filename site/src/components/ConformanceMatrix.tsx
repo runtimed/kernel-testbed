@@ -17,21 +17,29 @@ interface ConformanceMatrixProps {
 
 const TIERS: TestCategory[] = ['tier1_basic', 'tier2_interactive', 'tier3_rich_output', 'tier4_advanced'];
 
+// Color based on score percentage
+function getScoreColor(percentage: number): string {
+  if (percentage >= 90) return 'text-ctp-green';
+  if (percentage >= 70) return 'text-ctp-yellow';
+  if (percentage >= 50) return 'text-ctp-peach';
+  return 'text-ctp-red';
+}
+
 /** Summary table showing tier scores for each kernel */
 export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) {
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-lg border border-ctp-surface0 overflow-x-auto bg-ctp-mantle">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="min-w-[120px]">Kernel</TableHead>
-            <TableHead className="text-center">Protocol</TableHead>
+          <TableRow className="border-ctp-surface0 hover:bg-transparent">
+            <TableHead className="min-w-[120px] text-ctp-subtext0">Kernel</TableHead>
+            <TableHead className="text-center text-ctp-subtext0">Protocol</TableHead>
             {TIERS.map((tier) => (
-              <TableHead key={tier} className="text-center min-w-[80px]">
+              <TableHead key={tier} className="text-center min-w-[80px] text-ctp-subtext0">
                 {TIER_DESCRIPTIONS[tier].split(' ')[0]}
               </TableHead>
             ))}
-            <TableHead className="text-center min-w-[80px]">Total</TableHead>
+            <TableHead className="text-center min-w-[80px] text-ctp-subtext0">Total</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -43,31 +51,32 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
             return (
               <TableRow
                 key={report.kernel_name}
-                className={onKernelClick ? 'cursor-pointer hover:bg-muted/50' : ''}
+                className={`border-ctp-surface0 ${onKernelClick ? 'cursor-pointer hover:bg-ctp-surface0/50' : ''}`}
                 onClick={() => onKernelClick?.(report.kernel_name)}
               >
                 <TableCell className="font-medium">
                   <div>
-                    <div>{report.kernel_name}</div>
-                    <div className="text-xs text-muted-foreground">{report.implementation}</div>
+                    <div className="text-ctp-text">{report.kernel_name}</div>
+                    <div className="text-xs text-ctp-subtext0">{report.implementation}</div>
                   </div>
                 </TableCell>
-                <TableCell className="text-center font-mono text-sm">
+                <TableCell className="text-center font-mono text-sm text-ctp-lavender">
                   {report.protocol_version}
                 </TableCell>
                 {TIERS.map((tier) => {
                   const [tierPassed, tierTotal] = getTierScore(report, tier);
+                  const tierPercent = tierTotal > 0 ? Math.round((tierPassed / tierTotal) * 100) : 0;
                   return (
-                    <TableCell key={tier} className="text-center font-mono text-sm">
+                    <TableCell key={tier} className={`text-center font-mono text-sm ${getScoreColor(tierPercent)}`}>
                       {tierTotal > 0 ? `${tierPassed}/${tierTotal}` : '-'}
                     </TableCell>
                   );
                 })}
                 <TableCell className="text-center">
-                  <div className="font-mono">
+                  <div className={`font-mono ${getScoreColor(percentage)}`}>
                     {passed}/{total}
                   </div>
-                  <div className="text-xs text-muted-foreground">{percentage}%</div>
+                  <div className={`text-xs ${getScoreColor(percentage)}`}>{percentage}%</div>
                 </TableCell>
               </TableRow>
             );
@@ -102,13 +111,13 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
   }
 
   return (
-    <div className="rounded-md border overflow-x-auto">
+    <div className="rounded-lg border border-ctp-surface0 overflow-x-auto bg-ctp-mantle">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="min-w-[200px] sticky left-0 bg-background">Test</TableHead>
+          <TableRow className="border-ctp-surface0 hover:bg-transparent">
+            <TableHead className="min-w-[200px] sticky left-0 bg-ctp-mantle text-ctp-subtext0">Test</TableHead>
             {matrix.reports.map((report) => (
-              <TableHead key={report.kernel_name} className="text-center min-w-[80px]">
+              <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0">
                 <div className="text-xs">
                   {report.kernel_name}
                 </div>
@@ -124,18 +133,18 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
             return (
               <>
                 {/* Tier header row */}
-                <TableRow key={`${tier}-header`} className="bg-muted/30">
+                <TableRow key={`${tier}-header`} className="bg-ctp-surface0/30 hover:bg-ctp-surface0/30 border-ctp-surface0">
                   <TableCell
                     colSpan={matrix.reports.length + 1}
-                    className="font-semibold text-xs uppercase tracking-wide sticky left-0 bg-muted/30"
+                    className="font-semibold text-xs uppercase tracking-wide sticky left-0 bg-ctp-surface0/30 text-ctp-mauve"
                   >
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
                 </TableRow>
                 {/* Test rows */}
                 {testsInTier.map((testName) => (
-                  <TableRow key={testName}>
-                    <TableCell className="font-mono text-xs sticky left-0 bg-background">
+                  <TableRow key={testName} className="border-ctp-surface0 hover:bg-ctp-surface0/30">
+                    <TableCell className="font-mono text-xs sticky left-0 bg-ctp-mantle text-ctp-text">
                       {testName}
                     </TableCell>
                     {matrix.reports.map((report) => {
@@ -145,7 +154,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
                           {test ? (
                             <TestResultIcon result={test.result} />
                           ) : (
-                            <span className="text-muted-foreground">-</span>
+                            <span className="text-ctp-surface2">-</span>
                           )}
                         </TableCell>
                       );
