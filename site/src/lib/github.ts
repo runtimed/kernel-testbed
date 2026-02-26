@@ -7,6 +7,9 @@ import type { ConformanceMatrix } from '@/types/report';
 const REPO = 'runtimed/kernel-testbed';
 const GITHUB_API = 'https://api.github.com';
 
+// Path to embedded data (included at build time from latest release)
+const EMBEDDED_DATA_PATH = import.meta.env.BASE_URL + 'data/conformance-matrix.json';
+
 interface GitHubRelease {
   id: number;
   tag_name: string;
@@ -33,10 +36,20 @@ export interface ReleaseInfo {
 }
 
 /**
- * Get the latest conformance data from GitHub releases
+ * Get the latest conformance data - tries embedded data first, falls back to GitHub API
  */
 export async function getLatestConformanceData(): Promise<ConformanceMatrix> {
-  // Fetch latest release
+  // First try embedded data (no CORS issues)
+  try {
+    const embeddedRes = await fetch(EMBEDDED_DATA_PATH);
+    if (embeddedRes.ok) {
+      return embeddedRes.json();
+    }
+  } catch {
+    // Embedded data not available, try GitHub API
+  }
+
+  // Fall back to GitHub API
   const releaseRes = await fetch(`${GITHUB_API}/repos/${REPO}/releases/latest`);
 
   if (!releaseRes.ok) {
@@ -58,7 +71,8 @@ export async function getLatestConformanceData(): Promise<ConformanceMatrix> {
     );
   }
 
-  // Fetch the actual JSON
+  // Note: This may fail due to CORS on the release asset URL
+  // The embedded data approach above is the reliable path
   const dataRes = await fetch(asset.browser_download_url);
 
   if (!dataRes.ok) {
