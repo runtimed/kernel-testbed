@@ -1,0 +1,50 @@
+name: Site CI
+
+on:
+  pull_request:
+    paths:
+      - 'site/**'
+      - '.github/workflows/site-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/site-ci.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: site/package-lock.json
+
+      - name: Download latest conformance data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p site/public/data
+          # Try to download from latest release, skip if none exists
+          if gh release download --pattern 'conformance-matrix.json' --dir site/public/data 2>/dev/null; then
+            echo "Downloaded conformance data from release"
+          else
+            echo "No release found, using empty data for CI check"
+            # Create minimal valid data for build to succeed
+            echo '{"generated_at":"","commit_sha":"","reports":[]}' > site/public/data/conformance-matrix.json
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: site
+
+      - name: Lint
+        run: npm run lint
+        working-directory: site
+
+      - name: Build
+        run: npm run build
+        working-directory: site
