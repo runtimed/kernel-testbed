@@ -34,7 +34,7 @@ jobs:
             install: |
               # Download Ark binary from GitHub releases
               curl -fsSL -o ark.zip https://github.com/posit-dev/ark/releases/download/0.1.232/ark-0.1.232-linux-x64.zip
-              unzip ark.zip
+              unzip -o ark.zip
               chmod +x ark
               sudo mv ark /usr/local/bin/
               # Install kernel
