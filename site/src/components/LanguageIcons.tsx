@@ -95,6 +95,36 @@ export function GoIcon({ className = 'h-5 w-5' }: IconProps) {
   );
 }
 
+export function HaskellIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className}>
+      <path fill="none" stroke="#cba6f7" strokeLinecap="round" strokeLinejoin="round" d="M12.5 4.5h3m-1.5 3h1.5m-10 6 2.5-5-2.5-5H8l5.6 10h-2.53l-1.52-2.92L8 13.5zm-5 0 2.5-5-2.5-5H3l2.5 5-2.5 5z" />
+    </svg>
+  );
+}
+
+export function LuaIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className}>
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path stroke="#cdd6f4" d="M10.5 7A1.5 1.5 0 019 8.5 1.5 1.5 0 017.5 7 1.5 1.5 0 019 5.5 1.5 1.5 0 0110.5 7" />
+        <path stroke="#89b4fa" d="M7 2.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13m7-2a1.5 1.5 0 100 3 1.5 1.5 0 000-3" />
+      </g>
+    </svg>
+  );
+}
+
+export function OctaveIcon({ className = 'h-5 w-5' }: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className={className}>
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path stroke="#74c7ec" d="M4 11 .5 8.5 5 7q.78-1.77 1.89-1.89c.74-.07 1.94-1.28 3.61-3.61M5 7l1.5 1.5" />
+        <path stroke="#fab387" d="m15.5 12.5-5-11C8.5 6.83 6.33 10 4 11c1.67-.33 2.67.83 3 3.5 3.5-1.5 3.5-3.5 5-4s1.5 1.5 3.5 2" />
+      </g>
+    </svg>
+  );
+}
+
 // Map kernel names/languages to their icons
 export function getLanguageIcon(kernelName: string, language: string): React.ComponentType<IconProps> {
   const name = kernelName.toLowerCase();
@@ -105,10 +135,13 @@ export function getLanguageIcon(kernelName: string, language: string): React.Com
   if (name.includes('julia') || lang === 'julia') return JuliaIcon;
   if (name.includes('scala') || lang === 'scala') return ScalaIcon;
   if (name.includes('deno') || lang === 'typescript') return DenoIcon;
-  if (name.includes('ark') || lang === 'r') return RIcon;
+  if (name.includes('ark') || name.includes('xeus-r') || lang === 'r') return RIcon;
   if (name.includes('cling') || name.includes('xcpp') || lang === 'c++') return CppIcon;
-  if (name.includes('sql') || name.includes('xsql') || lang === 'sql') return SqlIcon;
+  if (name.includes('sql') || name.includes('xsql') || name.includes('sqlite') || lang === 'sql') return SqlIcon;
   if (name.includes('gonb') || name.includes('gophernotes') || lang === 'go') return GoIcon;
+  if (name.includes('haskell') || lang === 'haskell') return HaskellIcon;
+  if (name.includes('lua') || lang === 'lua') return LuaIcon;
+  if (name.includes('octave') || lang === 'octave' || lang === 'matlab') return OctaveIcon;
 
   // Default fallback
   return PythonIcon;
