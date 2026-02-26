@@ -52,6 +52,7 @@ impl LanguageSnippets {
             "scala" => Self::scala(),
             "c++" | "cpp" => Self::cpp(),
             "sql" => Self::sql(),
+            "lua" => Self::lua(),
             _ => Self::generic(&lang),
         }
     }
@@ -267,6 +268,27 @@ xcpp::display(h);"#,
             // xeus-sql displays query results as tables natively
             display_data_code: "SELECT 1 AS col1, 2 AS col2, 3 AS col3;",
             update_display_data_code: "-- SQL doesn't support update_display_data",
+        }
+    }
+
+    fn lua() -> Self {
+        // Lua scripting language
+        Self {
+            language: "lua".to_string(),
+            print_hello: "print('hello')",
+            print_stderr: "io.stderr:write('error\\n')",
+            simple_expr: "return 1 + 1",
+            simple_expr_result: "2",
+            incomplete_code: "function foo(",
+            complete_code: "x = 1",
+            syntax_error: "function function",
+            input_prompt: "-- Lua stdin varies by kernel",
+            sleep_code: "-- Lua sleep requires os.execute or socket",
+            completion_var: "test_variable_for_completion",
+            completion_setup: "test_variable_for_completion = 42",
+            completion_prefix: "test_variable_for_",
+            display_data_code: "print('no rich display')",
+            update_display_data_code: "-- Lua doesn't support update_display_data",
         }
     }
 
