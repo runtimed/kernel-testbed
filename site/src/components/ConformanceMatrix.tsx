@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import Link from 'next/link';
 import {
   Table,
@@ -146,15 +147,15 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
             if (testsInTier.length === 0) return null;
 
             return (
-              <>
+              <Fragment key={tier}>
                 {/* Tier header row */}
-                <TableRow key={`${tier}-header`} className="bg-ctp-surface0/50 hover:bg-ctp-surface0/50 border-ctp-surface0">
-                  <TableCell
-                    colSpan={matrix.reports.length + 1}
-                    className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0/50 text-ctp-mauve"
-                  >
+                <TableRow className="bg-ctp-surface0/50 hover:bg-ctp-surface0/50 border-ctp-surface0">
+                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0/50 text-ctp-mauve">
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
+                  {matrix.reports.map((report) => (
+                    <TableCell key={report.kernel_name} className="bg-ctp-surface0/50" />
+                  ))}
                 </TableRow>
                 {/* Test rows */}
                 {testsInTier.map((testName) => (
@@ -176,7 +177,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
                     })}
                   </TableRow>
                 ))}
-              </>
+              </Fragment>
             );
           })}
         </TableBody>
