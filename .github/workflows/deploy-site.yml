@@ -6,6 +6,11 @@ on:
     paths:
       - 'site/**'
       - '.github/workflows/deploy-site.yml'
+  # Rebuild when conformance tests complete (new release data available)
+  workflow_run:
+    workflows: ["Kernel Conformance"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -28,6 +33,18 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: site/package-lock.json
+
+      - name: Download latest conformance data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p site/public/data
+          # Try to download from latest release, skip if none exists
+          if gh release download --pattern 'conformance-matrix.json' --dir site/public/data 2>/dev/null; then
+            echo "Downloaded conformance data from release"
+          else
+            echo "No release found, site will show loading state"
+          fi
 
       - name: Install dependencies
         run: npm ci
