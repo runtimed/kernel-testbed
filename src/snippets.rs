@@ -49,6 +49,7 @@ impl LanguageSnippets {
             "julia" => Self::julia(),
             "typescript" | "javascript" => Self::typescript(),
             "go" => Self::go(),
+            "scala" => Self::scala(),
             _ => Self::generic(&lang),
         }
     }
@@ -175,6 +176,27 @@ impl LanguageSnippets {
             completion_prefix: "testVariableFor",
             display_data_code: "// gonb display helpers vary",
             update_display_data_code: "// gonb update_display varies",
+        }
+    }
+
+    fn scala() -> Self {
+        // Almond Scala kernel
+        Self {
+            language: "scala".to_string(),
+            print_hello: "println(\"hello\")",
+            print_stderr: "System.err.println(\"error\")",
+            simple_expr: "1 + 1",
+            simple_expr_result: "2",
+            incomplete_code: "def foo(",
+            complete_code: "val x = 1",
+            syntax_error: "def def",
+            input_prompt: "scala.io.StdIn.readLine()",
+            sleep_code: "Thread.sleep(2000)",
+            completion_var: "testVariableForCompletion",
+            completion_setup: "val testVariableForCompletion = 42",
+            completion_prefix: "testVariableFor",
+            display_data_code: "kernel.publish.html(\"<b>bold</b>\")",
+            update_display_data_code: "// Almond update_display_data support varies",
         }
     }
 
