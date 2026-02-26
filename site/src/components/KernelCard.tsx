@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Network } from 'lucide-react';
@@ -9,7 +10,7 @@ import { getPassedCount, getTotalCount, getTierScore, TIER_DESCRIPTIONS } from '
 
 interface KernelCardProps {
   report: KernelReport;
-  onClick?: () => void;
+  href?: string;
 }
 
 const TIERS: TestCategory[] = ['tier1_basic', 'tier2_interactive', 'tier3_rich_output', 'tier4_advanced'];
@@ -29,16 +30,15 @@ function getProgressColor(percentage: number): string {
   return 'bg-ctp-red';
 }
 
-export function KernelCard({ report, onClick }: KernelCardProps) {
+export function KernelCard({ report, href }: KernelCardProps) {
   const passed = getPassedCount(report);
   const total = getTotalCount(report);
   const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
   const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
 
-  return (
+  const cardContent = (
     <Card
-      className={`bg-ctp-mantle border-ctp-surface0 ${onClick ? 'cursor-pointer hover:border-ctp-mauve/50 hover:shadow-lg hover:shadow-ctp-mauve/5 transition-all' : ''}`}
-      onClick={onClick}
+      className={`bg-ctp-mantle border-ctp-surface0 ${href ? 'cursor-pointer hover:border-ctp-mauve/50 hover:shadow-lg hover:shadow-ctp-mauve/5 transition-all' : ''}`}
     >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
@@ -100,4 +100,14 @@ export function KernelCard({ report, onClick }: KernelCardProps) {
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  return cardContent;
 }

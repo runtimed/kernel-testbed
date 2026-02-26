@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Github, Table2, Grid3X3, LayoutGrid } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from '@/components/Header';
@@ -12,7 +11,6 @@ interface HomeContentProps {
 }
 
 export function HomeContent({ data }: HomeContentProps) {
-  const router = useRouter();
 
   return (
     <TooltipProvider>
@@ -47,12 +45,7 @@ export function HomeContent({ data }: HomeContentProps) {
             </nav>
 
             {/* Summary table */}
-            <SummaryTable
-              matrix={data}
-              onKernelClick={(name) => {
-                router.push(`/kernel/${encodeURIComponent(name)}/`);
-              }}
-            />
+            <SummaryTable matrix={data} />
           </div>
         </main>
 

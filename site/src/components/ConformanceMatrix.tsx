@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -15,7 +16,6 @@ import { getAllTestNames, getPassedCount, getTotalCount, getTierScore, TIER_DESC
 
 interface ConformanceMatrixProps {
   matrix: MatrixType;
-  onKernelClick?: (kernelName: string) => void;
 }
 
 const TIERS: TestCategory[] = ['tier1_basic', 'tier2_interactive', 'tier3_rich_output', 'tier4_advanced'];
@@ -29,7 +29,7 @@ function getScoreColor(percentage: number): string {
 }
 
 /** Summary table showing tier scores for each kernel */
-export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) {
+export function SummaryTable({ matrix }: ConformanceMatrixProps) {
   return (
     <div className="rounded-lg border border-ctp-surface0 overflow-x-auto bg-ctp-mantle">
       <Table>
@@ -51,39 +51,43 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
             const total = getTotalCount(report);
             const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
             const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
+            const href = `/kernel/${encodeURIComponent(report.kernel_name)}/`;
 
             return (
               <TableRow
                 key={report.kernel_name}
-                className={`border-ctp-surface0 ${onKernelClick ? 'cursor-pointer hover:bg-ctp-surface0/50' : ''}`}
-                onClick={() => onKernelClick?.(report.kernel_name)}
+                className="border-ctp-surface0 hover:bg-ctp-surface0/50"
               >
-                <TableCell className="font-medium pl-4">
-                  <div className="flex items-center gap-2.5">
+                <TableCell className="font-medium pl-4 p-0">
+                  <Link href={href} className="flex items-center gap-2.5 py-2 px-4">
                     <LanguageIcon className="h-5 w-5 flex-shrink-0" />
                     <div>
                       <div className="text-ctp-text">{report.kernel_name}</div>
                       <div className="text-xs text-ctp-subtext0">{report.implementation}</div>
                     </div>
-                  </div>
+                  </Link>
                 </TableCell>
-                <TableCell className="text-center font-mono text-sm text-ctp-lavender">
-                  {report.protocol_version}
+                <TableCell className="text-center font-mono text-sm text-ctp-lavender p-0">
+                  <Link href={href} className="block py-2 px-4">{report.protocol_version}</Link>
                 </TableCell>
                 {TIERS.map((tier) => {
                   const [tierPassed, tierTotal] = getTierScore(report, tier);
                   const tierPercent = tierTotal > 0 ? Math.round((tierPassed / tierTotal) * 100) : 0;
                   return (
-                    <TableCell key={tier} className={`text-center font-mono text-sm ${getScoreColor(tierPercent)}`}>
-                      {tierTotal > 0 ? `${tierPassed}/${tierTotal}` : '-'}
+                    <TableCell key={tier} className={`text-center font-mono text-sm ${getScoreColor(tierPercent)} p-0`}>
+                      <Link href={href} className="block py-2 px-4">
+                        {tierTotal > 0 ? `${tierPassed}/${tierTotal}` : '-'}
+                      </Link>
                     </TableCell>
                   );
                 })}
-                <TableCell className="text-center">
-                  <div className={`font-mono ${getScoreColor(percentage)}`}>
-                    {passed}/{total}
-                  </div>
-                  <div className={`text-xs ${getScoreColor(percentage)}`}>{percentage}%</div>
+                <TableCell className="text-center p-0">
+                  <Link href={href} className="block py-2 px-4">
+                    <div className={`font-mono ${getScoreColor(percentage)}`}>
+                      {passed}/{total}
+                    </div>
+                    <div className={`text-xs ${getScoreColor(percentage)}`}>{percentage}%</div>
+                  </Link>
                 </TableCell>
               </TableRow>
             );
@@ -118,15 +122,15 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
   }
 
   return (
-    <div className="rounded-lg border border-ctp-surface0 overflow-x-auto bg-ctp-mantle">
+    <div className="rounded-lg border border-ctp-surface0 overflow-auto bg-ctp-mantle max-h-[calc(100vh-280px)]">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 z-20 bg-ctp-mantle">
           <TableRow className="border-ctp-surface0 hover:bg-transparent">
-            <TableHead className="min-w-[200px] sticky left-0 bg-ctp-mantle text-ctp-subtext0">Test</TableHead>
+            <TableHead className="min-w-[200px] sticky left-0 z-30 bg-ctp-mantle text-ctp-subtext0">Test</TableHead>
             {matrix.reports.map((report) => {
               const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
               return (
-                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3">
+                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3 bg-ctp-mantle">
                   <div className="flex flex-col items-center gap-1.5">
                     <LanguageIcon className="h-5 w-5" />
                     <span className="text-xs">{report.kernel_name}</span>
@@ -144,10 +148,10 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
             return (
               <>
                 {/* Tier header row */}
-                <TableRow key={`${tier}-header`} className="bg-ctp-surface0/30 hover:bg-ctp-surface0/30 border-ctp-surface0">
+                <TableRow key={`${tier}-header`} className="bg-ctp-surface0/50 hover:bg-ctp-surface0/50 border-ctp-surface0">
                   <TableCell
                     colSpan={matrix.reports.length + 1}
-                    className="font-semibold text-xs uppercase tracking-wide sticky left-0 bg-ctp-surface0/30 text-ctp-mauve"
+                    className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0/50 text-ctp-mauve"
                   >
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
@@ -155,7 +159,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
                 {/* Test rows */}
                 {testsInTier.map((testName) => (
                   <TableRow key={testName} className="border-ctp-surface0 hover:bg-ctp-surface0/30">
-                    <TableCell className="font-mono text-xs sticky left-0 bg-ctp-mantle text-ctp-text">
+                    <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle text-ctp-text">
                       {testName}
                     </TableCell>
                     {matrix.reports.map((report) => {

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Github, Table2, Grid3X3, LayoutGrid } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from '@/components/Header';
@@ -12,7 +11,6 @@ interface CardsContentProps {
 }
 
 export function CardsContent({ data }: CardsContentProps) {
-  const router = useRouter();
 
   return (
     <TooltipProvider>
@@ -52,9 +50,7 @@ export function CardsContent({ data }: CardsContentProps) {
                 <KernelCard
                   key={report.kernel_name}
                   report={report}
-                  onClick={() => {
-                    router.push(`/kernel/${encodeURIComponent(report.kernel_name)}/`);
-                  }}
+                  href={`/kernel/${encodeURIComponent(report.kernel_name)}/`}
                 />
               ))}
             </div>
