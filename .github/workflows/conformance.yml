@@ -44,7 +44,7 @@ jobs:
             install: |
               curl -Lo coursier https://git.io/coursier-cli
               chmod +x coursier
-              ./coursier launch --use-bootstrap almond -- --install
+              ./coursier launch almond -- --install
               rm -f coursier
             kernel-name: scala
 
