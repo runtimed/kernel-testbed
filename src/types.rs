@@ -190,9 +190,43 @@ pub struct KernelReport {
     /// Total duration of test run
     #[serde(with = "duration_millis")]
     pub total_duration: Duration,
+    /// Error that prevented tests from running (e.g., kernel startup failed)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub startup_error: Option<String>,
 }
 
 impl KernelReport {
+    /// Create a report for a kernel that failed during startup.
+    pub fn new_failed_at_startup(
+        kernel_name: String,
+        language: String,
+        error: String,
+        total_duration: Duration,
+    ) -> Self {
+        Self {
+            kernel_name,
+            language,
+            implementation: "unknown".to_string(),
+            protocol_version: "unknown".to_string(),
+            results: vec![TestRecord {
+                name: "kernel_startup".to_string(),
+                category: TestCategory::Tier1Basic,
+                description: "Kernel starts and responds to kernel_info_request".to_string(),
+                message_type: "kernel_info_request".to_string(),
+                result: TestResult::fail(&error, FailureKind::ProtocolError),
+                duration: total_duration,
+            }],
+            timestamp: Utc::now(),
+            total_duration,
+            startup_error: Some(error),
+        }
+    }
+
+    /// Returns true if the kernel failed before any tests could run.
+    pub fn has_startup_error(&self) -> bool {
+        self.startup_error.is_some()
+    }
+
     /// Count of passed tests
     pub fn passed(&self) -> usize {
         self.results.iter().filter(|r| r.result.is_pass()).count()

@@ -113,6 +113,8 @@ export interface KernelReport {
   timestamp: string;
   /** Total duration of test run in milliseconds */
   total_duration: number;
+  /** Error that prevented tests from running (e.g., kernel startup failed) */
+  startup_error?: string;
 }
 
 /** Matrix of conformance results across multiple kernels */
@@ -159,4 +161,9 @@ export function getAllTestNames(matrix: ConformanceMatrix): string[] {
     }
   }
   return Array.from(names).sort();
+}
+
+/** Check if a kernel failed during startup before tests could run */
+export function hasStartupError(report: KernelReport): boolean {
+  return report.startup_error !== undefined && report.startup_error !== null;
 }

@@ -6,6 +6,7 @@ import { KernelCard } from '@/components/KernelCard';
 import { TierBreakdown } from '@/components/TierBreakdown';
 import { FailureSummary } from '@/components/FailureSummary';
 import { SummaryTable, DetailedMatrix } from '@/components/ConformanceMatrix';
+import { hasStartupError } from '@/types/report';
 import { useConformanceData } from '@/hooks/useConformanceData';
 import { ArrowLeft, Table2, Grid3X3, LayoutGrid, Github, AlertCircle } from 'lucide-react';
 import type { KernelReport } from '@/types/report';
@@ -122,7 +123,8 @@ function App() {
 
             <FailureSummary report={selectedKernel} />
 
-            <TierBreakdown report={selectedKernel} />
+            {/* Only show tier breakdown if kernel started successfully */}
+            {!hasStartupError(selectedKernel) && <TierBreakdown report={selectedKernel} />}
           </main>
         </div>
       </TooltipProvider>

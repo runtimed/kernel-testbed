@@ -120,25 +120,24 @@ async fn main() -> anyhow::Result<()> {
             }
         };
 
-        match run_conformance_suite(kernelspec, &tiers, timeout, &tests).await {
-            Ok(report) => {
-                if args.verbose {
-                    eprintln!(
-                        "  Completed: {}/{} passed",
-                        report.passed(),
-                        report.total()
-                    );
-                }
-                reports.push(report);
-            }
-            Err(e) => {
-                eprintln!("Error testing kernel '{}': {}", kernel_name, e);
+        let report = run_conformance_suite(kernelspec, &tiers, timeout, &tests).await;
+
+        if args.verbose {
+            if report.has_startup_error() {
+                eprintln!("  Startup failed: {}", report.startup_error.as_ref().unwrap());
+            } else {
+                eprintln!(
+                    "  Completed: {}/{} passed",
+                    report.passed(),
+                    report.total()
+                );
             }
         }
+        reports.push(report);
     }
 
     if reports.is_empty() {
-        eprintln!("No successful test runs");
+        eprintln!("No kernels tested");
         std::process::exit(1);
     }
 
