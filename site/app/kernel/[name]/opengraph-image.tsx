@@ -1,12 +1,112 @@
 import { ImageResponse } from 'next/og';
 import { getAllKernelNames, getKernelReport } from '@/lib/data';
 import { getPassedCount, getTotalCount, hasStartupError } from '@/types/report';
+import { iconPaths, catppuccinColors, getIconKey, type ColorKey } from '@/lib/icon-paths';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-static';
 export const alt = 'Kernel Conformance Results';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+// Render SVG icon for Satori (requires inline styles, not className)
+function getLanguageIconSvg(language: string, kernelName: string) {
+  const key = getIconKey(language, kernelName);
+  const icon = iconPaths[key] || iconPaths.code;
+
+  return (
+    <svg viewBox={icon.viewBox} style={{ width: 120, height: 120 }}>
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1">
+        {icon.paths.map((path, i) => (
+          <path
+            key={i}
+            d={path.d}
+            stroke={catppuccinColors[path.color as ColorKey]}
+          />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
+// Special case display names for known implementations/kernels
+const displayNameOverrides: Record<string, string> = {
+  // Python
+  ipython: 'IPython',
+  xpython: 'Xeus Python',
+  'xeus-python': 'Xeus Python',
+
+  // R
+  ark: 'Ark',
+  xr: 'Xeus R',
+  'xeus-r': 'Xeus R',
+  irkernel: 'IRkernel',
+
+  // C++
+  xcpp: 'Xeus C++',
+  xcpp17: 'Xeus C++17',
+  xcpp20: 'Xeus C++20',
+  'xeus-cling': 'Xeus C++',
+
+  // Haskell
+  xhaskell: 'Xeus Haskell',
+  'xeus-haskell': 'Xeus Haskell',
+
+  // Lua
+  xlua: 'Xeus Lua',
+  'xeus-lua': 'Xeus Lua',
+
+  // SQL
+  xsql: 'Xeus SQL',
+  xsqlite: 'Xeus SQLite',
+  'xeus-sqlite': 'Xeus SQLite',
+  'xeus-sql': 'Xeus SQL',
+
+  // Octave
+  xoctave: 'Xeus Octave',
+  'xeus-octave': 'Xeus Octave',
+
+  // Other
+  gonb: 'GoNB',
+  gophernotes: 'Gophernotes',
+  ijulia: 'IJulia',
+  'julia-1.11': 'IJulia',
+  irust: 'IRust',
+  rust: 'Evcxr',
+  evcxr: 'Evcxr',
+  deno: 'Deno',
+  scala: 'Almond',
+  'ocaml-jupyter': 'OCaml Jupyter',
+  ocaml: 'OCaml Jupyter',
+};
+
+// Capitalize first letter of each word
+function titleCase(str: string): string {
+  if (!str) return str;
+  return str.split(/[\s_-]+/).map(word =>
+    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  ).join(' ');
+}
+
+// Get display name for kernel (prefer implementation, fallback to kernel_name)
+function getDisplayName(report: { kernel_name: string; implementation: string }): string {
+  const impl = report.implementation?.toLowerCase();
+  const name = report.kernel_name?.toLowerCase();
+
+  // Check overrides first
+  if (impl && displayNameOverrides[impl]) {
+    return displayNameOverrides[impl];
+  }
+  if (name && displayNameOverrides[name]) {
+    return displayNameOverrides[name];
+  }
+
+  // Fall back to title case
+  if (impl && impl !== 'unknown' && impl !== '') {
+    return titleCase(report.implementation);
+  }
+  return titleCase(report.kernel_name);
+}
 
 export async function generateStaticParams() {
   const kernelNames = await getAllKernelNames();
@@ -94,19 +194,18 @@ export default async function OGImage({ params }: Props) {
           overflow: 'hidden',
         }}
       >
-        {/* Decorative flask icon - bottom left, cropped */}
+        {/* Decorative language icon - bottom left, artfully cropped */}
         <div
           style={{
             position: 'absolute',
-            bottom: '-80px',
-            left: '-40px',
+            bottom: '40px',
+            left: '-10px',
             display: 'flex',
-            fontSize: '400px',
-            opacity: 0.08,
-            transform: 'rotate(-15deg)',
+            opacity: 0.15,
+            transform: 'rotate(-15deg) scale(3)',
           }}
         >
-          🧪
+          {getLanguageIconSvg(report.language, report.kernel_name)}
         </div>
 
         {/* Accent gradient bar at top */}
@@ -164,7 +263,7 @@ export default async function OGImage({ params }: Props) {
               maxWidth: '600px',
             }}
           >
-            {/* Kernel name - hero text */}
+            {/* Implementation name - hero text */}
             <div
               style={{
                 display: 'flex',
@@ -175,10 +274,10 @@ export default async function OGImage({ params }: Props) {
                 marginBottom: '16px',
               }}
             >
-              {report.kernel_name}
+              {getDisplayName(report)}
             </div>
 
-            {/* Implementation tagline */}
+            {/* Language */}
             <div
               style={{
                 display: 'flex',
@@ -186,7 +285,7 @@ export default async function OGImage({ params }: Props) {
                 color: colors.subtext0,
               }}
             >
-              {report.implementation} ({report.language})
+              {titleCase(report.language)}
             </div>
 
             {/* Protocol version - subtle */}
