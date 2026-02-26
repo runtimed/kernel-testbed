@@ -33,7 +33,7 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
       <Table>
         <TableHeader>
           <TableRow className="border-ctp-surface0 hover:bg-transparent">
-            <TableHead className="min-w-[150px] text-ctp-subtext0">Kernel</TableHead>
+            <TableHead className="min-w-[150px] text-ctp-subtext0 pl-4">Kernel</TableHead>
             <TableHead className="text-center text-ctp-subtext0">Protocol</TableHead>
             {TIERS.map((tier) => (
               <TableHead key={tier} className="text-center min-w-[80px] text-ctp-subtext0">
@@ -56,7 +56,7 @@ export function SummaryTable({ matrix, onKernelClick }: ConformanceMatrixProps) 
                 className={`border-ctp-surface0 ${onKernelClick ? 'cursor-pointer hover:bg-ctp-surface0/50' : ''}`}
                 onClick={() => onKernelClick?.(report.kernel_name)}
               >
-                <TableCell className="font-medium">
+                <TableCell className="font-medium pl-4">
                   <div className="flex items-center gap-2.5">
                     <LanguageIcon className="h-5 w-5 flex-shrink-0" />
                     <div>
