@@ -77,7 +77,8 @@ impl LanguageSnippets {
         Self {
             language: "r".to_string(),
             print_hello: "cat('hello\\n')",
-            print_stderr: "message('error')",
+            // Use cat() with stderr() for more explicit stderr output
+            print_stderr: "cat('error\\n', file=stderr())",
             simple_expr: "1 + 1",
             simple_expr_result: "[1] 2",
             incomplete_code: "function(",
@@ -88,8 +89,9 @@ impl LanguageSnippets {
             completion_var: "test_variable_for_completion",
             completion_setup: "test_variable_for_completion <- 42",
             completion_prefix: "test_variable_for_",
-            display_data_code: "IRdisplay::display_html('<b>bold</b>')",
-            update_display_data_code: "# IRkernel doesn't support update_display_data",
+            // Ark doesn't have IRdisplay, skip rich output tests for now
+            display_data_code: "# Ark doesn't have IRdisplay package",
+            update_display_data_code: "# R kernels typically don't support update_display_data",
         }
     }
 
