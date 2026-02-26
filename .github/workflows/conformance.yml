@@ -82,6 +82,9 @@ jobs:
           - name: xeus-r
             install: micromamba install -y xeus-r -c conda-forge
             kernel-name: xr
+          - name: xeus-lua
+            install: micromamba install -y xeus-lua -c conda-forge
+            kernel-name: xlua
 
     steps:
       - uses: actions/checkout@v4
@@ -121,7 +124,7 @@ jobs:
           go-version: '1.22'
 
       - name: Set up Mamba
-        if: contains(fromJson('["xeus-cling", "xeus-sql", "xeus-python", "xeus-cpp", "xeus-sqlite", "xeus-r"]'), matrix.kernel.name)
+        if: contains(fromJson('["xeus-cling", "xeus-sql", "xeus-python", "xeus-cpp", "xeus-sqlite", "xeus-r", "xeus-lua"]'), matrix.kernel.name)
         uses: mamba-org/setup-micromamba@v2
         with:
           micromamba-version: 'latest'
@@ -160,7 +163,7 @@ jobs:
         run: ${{ matrix.kernel.install }}
 
       - name: Copy conda kernelspecs to user directory
-        if: contains(fromJson('["xeus-cling", "xeus-sql", "xeus-python", "xeus-cpp", "xeus-sqlite", "xeus-r"]'), matrix.kernel.name)
+        if: contains(fromJson('["xeus-cling", "xeus-sql", "xeus-python", "xeus-cpp", "xeus-sqlite", "xeus-r", "xeus-lua"]'), matrix.kernel.name)
         run: |
           echo "Looking for kernelspecs..."
           find $MAMBA_ROOT_PREFIX -name "kernel.json" 2>/dev/null || true
