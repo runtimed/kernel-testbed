@@ -90,9 +90,10 @@ impl LanguageSnippets {
             completion_var: "test_variable_for_completion",
             completion_setup: "test_variable_for_completion <- 42",
             completion_prefix: "test_variable_for_",
-            // Ark doesn't have IRdisplay, skip rich output tests for now
-            display_data_code: "# Ark doesn't have IRdisplay package",
-            update_display_data_code: "# R kernels typically don't support update_display_data",
+            // Ark produces display_data natively for graphics - no IRdisplay needed
+            display_data_code: "plot(1:10)",
+            // Note: update_display_data may not trigger in batch mode; Ark may optimize to single render
+            update_display_data_code: "plot(1:10); points(5, 5, col='red', pch=19)",
         }
     }
 
