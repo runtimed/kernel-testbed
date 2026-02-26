@@ -11,9 +11,8 @@ name = "jupyter-kernel-test"
 path = "src/main.rs"
 
 [dependencies]
-# Use fix branch until PR #283 is merged (date field optional for Almond)
-jupyter-protocol = { git = "https://github.com/runtimed/runtimed", branch = "fix-optional-header-date" }
-runtimelib = { git = "https://github.com/runtimed/runtimed", branch = "fix-optional-header-date", features = ["tokio-runtime", "ring"] }
+jupyter-protocol = { git = "https://github.com/runtimed/runtimed", branch = "main" }
+runtimelib = { git = "https://github.com/runtimed/runtimed", branch = "main", features = ["tokio-runtime", "ring"] }
 
 clap = { version = "4", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
