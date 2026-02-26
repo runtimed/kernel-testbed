@@ -105,7 +105,8 @@ jobs:
               opam install -y jupyter
               echo '#use "topfind";;' >> ~/.ocamlinit
               ocaml-jupyter-opam-genspec
-              jupyter kernelspec install --user --name ocaml-jupyter "$(opam var share)/jupyter"
+              mkdir -p ~/.local/share/jupyter/kernels/ocaml-jupyter
+              cp -r "$(opam var share)/jupyter"/* ~/.local/share/jupyter/kernels/ocaml-jupyter/
             kernel-name: ocaml-jupyter
 
     steps:
