@@ -147,6 +147,21 @@ jobs:
       - name: Install kernel
         run: ${{ matrix.kernel.install }}
 
+      - name: Copy conda kernelspecs to user directory
+        if: matrix.kernel.name == 'xeus-cling' || matrix.kernel.name == 'xeus-sql'
+        run: |
+          echo "Looking for kernelspecs..."
+          find $MAMBA_ROOT_PREFIX -name "kernel.json" 2>/dev/null || true
+          find /home/runner -path "*/jupyter/kernels/*/kernel.json" 2>/dev/null || true
+          mkdir -p ~/.local/share/jupyter/kernels
+          # Copy from wherever the kernels are installed
+          if [ -d "$MAMBA_ROOT_PREFIX/envs/kernel/share/jupyter/kernels" ]; then
+            cp -r $MAMBA_ROOT_PREFIX/envs/kernel/share/jupyter/kernels/* ~/.local/share/jupyter/kernels/
+          elif [ -d "$MAMBA_ROOT_PREFIX/share/jupyter/kernels" ]; then
+            cp -r $MAMBA_ROOT_PREFIX/share/jupyter/kernels/* ~/.local/share/jupyter/kernels/
+          fi
+          ls -la ~/.local/share/jupyter/kernels/ || true
+
       - name: Build test suite
         run: cargo build --release
 
