@@ -54,6 +54,7 @@ impl LanguageSnippets {
             "sql" => Self::sql(),
             "lua" => Self::lua(),
             "haskell" => Self::haskell(),
+            "octave" => Self::octave(),
             _ => Self::generic(&lang),
         }
     }
@@ -311,6 +312,27 @@ xcpp::display(h);"#,
             completion_prefix: "testVariableFor",
             display_data_code: "putStrLn \"no rich display\"",
             update_display_data_code: "-- Haskell doesn't support update_display_data",
+        }
+    }
+
+    fn octave() -> Self {
+        // GNU Octave - MATLAB-compatible language
+        Self {
+            language: "octave".to_string(),
+            print_hello: "disp('hello')",
+            print_stderr: "fprintf(2, 'error\\n')",  // fd 2 = stderr in Octave
+            simple_expr: "1 + 1",
+            simple_expr_result: "ans = 2",  // Octave prefixes with "ans = "
+            incomplete_code: "if true",
+            complete_code: "x = 1;",
+            syntax_error: "1 +",
+            input_prompt: "% Octave stdin doesn't support Jupyter input protocol",
+            sleep_code: "pause(2)",
+            completion_var: "test_variable_for_completion",
+            completion_setup: "test_variable_for_completion = 42;",
+            completion_prefix: "test_variable_for_",
+            display_data_code: "% Octave plot() requires display - skip in headless CI",
+            update_display_data_code: "% Octave update_display varies by environment",
         }
     }
 
