@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Network } from 'lucide-react';
+import { Github, Network } from 'lucide-react';
 import { getLanguageIcon } from './LanguageIcons';
+import { getKernelMetadata } from '@/lib/kernel-metadata';
 import type { KernelReport, TestCategory } from '@/types/report';
 import { getPassedCount, getTotalCount, getTierScore, TIER_DESCRIPTIONS } from '@/types/report';
 
@@ -35,6 +36,7 @@ export function KernelCard({ report, href }: KernelCardProps) {
   const total = getTotalCount(report);
   const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
   const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
+  const metadata = getKernelMetadata(report.kernel_name);
 
   const cardContent = (
     <Card
@@ -46,8 +48,20 @@ export function KernelCard({ report, href }: KernelCardProps) {
             <LanguageIcon className="h-8 w-8" />
             <div>
               <CardTitle className="text-lg text-ctp-text">{report.kernel_name}</CardTitle>
-              <CardDescription className="text-ctp-subtext0">
+              <CardDescription className="text-ctp-subtext0 flex items-center gap-1.5">
                 {report.implementation || report.language}
+                {metadata?.repository && (
+                  <a
+                    href={metadata.repository}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-ctp-overlay0 hover:text-ctp-blue transition-colors"
+                    title="View source on GitHub"
+                  >
+                    <Github className="h-3.5 w-3.5" />
+                  </a>
+                )}
               </CardDescription>
             </div>
           </div>

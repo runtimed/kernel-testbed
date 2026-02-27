@@ -1,10 +1,11 @@
 import { Metadata } from 'next';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Github } from 'lucide-react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from '@/components/Header';
 import { TierBreakdown } from '@/components/TierBreakdown';
 import { FailureSummary } from '@/components/FailureSummary';
 import { getConformanceData, getAllKernelNames, getKernelReport } from '@/lib/data';
+import { getKernelMetadata } from '@/lib/kernel-metadata';
 import { getPassedCount, getTotalCount, hasStartupError } from '@/types/report';
 import { notFound } from 'next/navigation';
 
@@ -54,6 +55,8 @@ export default async function KernelPage({ params }: KernelPageProps) {
     notFound();
   }
 
+  const metadata = getKernelMetadata(report.kernel_name);
+
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-ctp-base">
@@ -72,6 +75,18 @@ export default async function KernelPage({ params }: KernelPageProps) {
             <p className="text-ctp-subtext0">
               {report.implementation} ({report.language}) • Protocol {report.protocol_version}
             </p>
+            {metadata?.repository && (
+              <a
+                href={metadata.repository}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-ctp-blue hover:text-ctp-sapphire transition-colors mt-2"
+              >
+                <Github className="h-4 w-4" />
+                View on GitHub
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
           </div>
 
           <FailureSummary report={report} />
