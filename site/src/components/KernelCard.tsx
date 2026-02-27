@@ -67,7 +67,7 @@ export function KernelCard({ report, href }: KernelCardProps) {
           </div>
           <Badge
             variant="outline"
-            className={`text-lg font-mono border-ctp-surface1 bg-ctp-surface0/50 ${getScoreColor(percentage)}`}
+            className={`text-lg font-mono border-ctp-surface1 bg-ctp-surface0/50 latte:bg-ctp-surface0 ${getScoreColor(percentage)}`}
           >
             {passed}/{total}
           </Badge>
@@ -84,7 +84,7 @@ export function KernelCard({ report, href }: KernelCardProps) {
               </span>
               <span className={`font-medium ${getScoreColor(percentage)}`}>{percentage}%</span>
             </div>
-            <div className="h-2 bg-ctp-surface0 rounded-full overflow-hidden">
+            <div className="h-2 bg-ctp-surface0 latte:bg-ctp-surface1 rounded-full overflow-hidden">
               <div
                 className={`h-full ${getProgressColor(percentage)} transition-all`}
                 style={{ width: `${percentage}%` }}

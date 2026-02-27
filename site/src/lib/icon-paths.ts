@@ -5,17 +5,18 @@
  * Icons from Catppuccin vscode-icons: https://github.com/catppuccin/vscode-icons
  */
 
-// Catppuccin Mocha color palette
+// Catppuccin color palette using CSS variables
+// These automatically switch between Latte (light) and Mocha (dark) based on system preference
 export const catppuccinColors = {
-  blue: '#89b4fa',
-  yellow: '#f9e2af',
-  peach: '#fab387',
-  red: '#f38ba8',
-  mauve: '#cba6f7',
-  green: '#a6e3a1',
-  teal: '#74c7ec',
-  text: '#cdd6f4',
-  overlay: '#7f849c',
+  blue: 'var(--catppuccin-color-blue)',
+  yellow: 'var(--catppuccin-color-yellow)',
+  peach: 'var(--catppuccin-color-peach)',
+  red: 'var(--catppuccin-color-red)',
+  mauve: 'var(--catppuccin-color-mauve)',
+  green: 'var(--catppuccin-color-green)',
+  teal: 'var(--catppuccin-color-teal)',
+  text: 'var(--catppuccin-color-text)',
+  overlay: 'var(--catppuccin-color-overlay1)',
 } as const;
 
 export type ColorKey = keyof typeof catppuccinColors;
