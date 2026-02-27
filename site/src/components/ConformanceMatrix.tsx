@@ -29,8 +29,19 @@ function getScoreColor(percentage: number): string {
   return 'text-ctp-red';
 }
 
+/** Sort reports by score (highest first) */
+function sortByScore(reports: MatrixType['reports']) {
+  return [...reports].sort((a, b) => {
+    const aPercent = getTotalCount(a) > 0 ? getPassedCount(a) / getTotalCount(a) : 0;
+    const bPercent = getTotalCount(b) > 0 ? getPassedCount(b) / getTotalCount(b) : 0;
+    return bPercent - aPercent;
+  });
+}
+
 /** Summary table showing tier scores for each kernel */
 export function SummaryTable({ matrix }: ConformanceMatrixProps) {
+  const sortedReports = sortByScore(matrix.reports);
+
   return (
     <div className="rounded-lg border border-ctp-surface0 overflow-x-auto bg-ctp-mantle">
       <Table>
@@ -47,7 +58,7 @@ export function SummaryTable({ matrix }: ConformanceMatrixProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {matrix.reports.map((report) => {
+          {sortedReports.map((report) => {
             const passed = getPassedCount(report);
             const total = getTotalCount(report);
             const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
@@ -101,6 +112,7 @@ export function SummaryTable({ matrix }: ConformanceMatrixProps) {
 
 /** Detailed matrix showing all tests vs all kernels */
 export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
+  const sortedReports = sortByScore(matrix.reports);
   const testNames = getAllTestNames(matrix);
 
   // Group tests by category for display
@@ -128,7 +140,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
         <TableHeader className="sticky top-0 z-20 bg-ctp-mantle">
           <TableRow className="border-ctp-surface0 hover:bg-transparent">
             <TableHead className="min-w-[200px] sticky left-0 z-30 bg-ctp-mantle text-ctp-subtext0">Test</TableHead>
-            {matrix.reports.map((report) => {
+            {sortedReports.map((report) => {
               const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
               return (
                 <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3 bg-ctp-mantle">
@@ -153,7 +165,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
                   <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0 text-ctp-mauve">
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
-                  {matrix.reports.map((report) => (
+                  {sortedReports.map((report) => (
                     <TableCell key={report.kernel_name} className="bg-ctp-surface0" />
                   ))}
                 </TableRow>
@@ -163,7 +175,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
                     <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle text-ctp-text">
                       {testName}
                     </TableCell>
-                    {matrix.reports.map((report) => {
+                    {sortedReports.map((report) => {
                       const test = report.results.find((t) => t.name === testName);
                       return (
                         <TableCell key={report.kernel_name} className="text-center">
