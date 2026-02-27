@@ -68,7 +68,7 @@ export function SummaryTable({ matrix }: ConformanceMatrixProps) {
             return (
               <TableRow
                 key={report.kernel_name}
-                className="border-ctp-surface0 hover:bg-ctp-surface0/50"
+                className="border-ctp-surface0 hover:bg-ctp-surface0/50 latte:hover:bg-ctp-surface1/50"
               >
                 <TableCell className="font-medium pl-4 p-0">
                   <Link href={href} className="flex items-center gap-2.5 py-2 px-4">
@@ -161,17 +161,17 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
             return (
               <Fragment key={tier}>
                 {/* Tier header row */}
-                <TableRow className="bg-ctp-surface0 hover:bg-ctp-surface0 border-ctp-surface0">
-                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0 text-ctp-mauve">
+                <TableRow className="bg-ctp-surface0 latte:bg-ctp-surface1 hover:bg-ctp-surface0 latte:hover:bg-ctp-surface1 border-ctp-surface0">
+                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0 latte:bg-ctp-surface1 text-ctp-mauve">
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
                   {sortedReports.map((report) => (
-                    <TableCell key={report.kernel_name} className="bg-ctp-surface0" />
+                    <TableCell key={report.kernel_name} className="bg-ctp-surface0 latte:bg-ctp-surface1" />
                   ))}
                 </TableRow>
                 {/* Test rows */}
                 {testsInTier.map((testName) => (
-                  <TableRow key={testName} className="border-ctp-surface0 hover:bg-ctp-surface0/30">
+                  <TableRow key={testName} className="border-ctp-surface0 hover:bg-ctp-surface0/30 latte:hover:bg-ctp-surface1/30">
                     <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle text-ctp-text">
                       {testName}
                     </TableCell>
