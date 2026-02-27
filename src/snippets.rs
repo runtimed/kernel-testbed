@@ -168,7 +168,7 @@ Html("<b>bold</b>")"#,
             print_stderr: "console.error('error')",
             simple_expr: "1 + 1",
             simple_expr_result: "2",
-            incomplete_code: "function foo(",
+            incomplete_code: "const x = {",
             complete_code: "const x = 1",
             syntax_error: "function function",
             input_prompt: "prompt('Enter: ')",
@@ -178,7 +178,8 @@ Html("<b>bold</b>")"#,
             completion_prefix: "testVariableFor",
             display_data_code: r#"await Deno.jupyter.broadcast("display_data", { data: { "text/html": "<b>bold</b>" }, metadata: {}, transient: {} })"#,
             update_display_data_code: r#"await Deno.jupyter.broadcast("display_data", { data: { "text/html": "<b>initial</b>" }, metadata: {}, transient: { display_id: "test_update" } }); await Deno.jupyter.broadcast("update_display_data", { data: { "text/html": "<b>updated</b>" }, metadata: {}, transient: { display_id: "test_update" } })"#,
-            rich_execute_result_code: r#"Deno.jupyter.html("<b>bold</b>")"#,
+            // Return structured data - Deno produces rich execute_result with application/json
+            rich_execute_result_code: r#"[{letter: "A", frequency: 0.08167}, {letter: "B", frequency: 0.01492}]"#,
         }
     }
 
