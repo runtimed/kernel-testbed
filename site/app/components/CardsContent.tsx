@@ -5,12 +5,19 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Header } from '@/components/Header';
 import { KernelCard } from '@/components/KernelCard';
 import type { ConformanceMatrix } from '@/types/report';
+import { getPassedCount, getTotalCount } from '@/types/report';
 
 interface CardsContentProps {
   data: ConformanceMatrix;
 }
 
 export function CardsContent({ data }: CardsContentProps) {
+  // Sort reports by score (highest first)
+  const sortedReports = [...data.reports].sort((a, b) => {
+    const aPercent = getTotalCount(a) > 0 ? getPassedCount(a) / getTotalCount(a) : 0;
+    const bPercent = getTotalCount(b) > 0 ? getPassedCount(b) / getTotalCount(b) : 0;
+    return bPercent - aPercent;
+  });
 
   return (
     <TooltipProvider>
@@ -46,7 +53,7 @@ export function CardsContent({ data }: CardsContentProps) {
 
             {/* Kernel cards grid */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {data.reports.map((report) => (
+              {sortedReports.map((report) => (
                 <KernelCard
                   key={report.kernel_name}
                   report={report}
