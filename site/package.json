@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "fetch-data": "mkdir -p public/data && curl -sL $(curl -s https://api.github.com/repos/runtimed/kernel-testbed/releases/latest | grep browser_download_url | grep conformance-matrix.json | cut -d '\"' -f 4) -o public/data/conformance-matrix.json"
   },
   "dependencies": {
     "@catppuccin/tailwindcss": "^1.0.0",
