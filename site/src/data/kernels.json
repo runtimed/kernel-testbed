@@ -1,4 +1,5 @@
 {
+  "$schema": "./kernels.schema.json",
   "kernels": {
     "python3": {
       "implementation": "ipykernel",
