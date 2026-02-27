@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "snippets.schema.json",
+  "title": "Language Snippets",
+  "description": "Code snippets for testing Jupyter kernel protocol conformance",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "languages": {
+      "type": "object",
+      "description": "Map of language names to their test snippets",
+      "additionalProperties": {
+        "$ref": "#/$defs/LanguageSnippets"
+      }
+    }
+  },
+  "required": ["languages"],
+  "additionalProperties": false,
+  "$defs": {
+    "LanguageSnippets": {
+      "type": "object",
+      "description": "Code snippets for a specific programming language",
+      "properties": {
+        "print_hello": {
+          "type": "string",
+          "description": "Code that prints 'hello' to stdout"
+        },
+        "print_stderr": {
+          "type": "string",
+          "description": "Code that prints 'error' to stderr"
+        },
+        "simple_expr": {
+          "type": "string",
+          "description": "Simple expression that returns a value"
+        },
+        "simple_expr_result": {
+          "type": "string",
+          "description": "Expected string output from simple_expr"
+        },
+        "incomplete_code": {
+          "type": "string",
+          "description": "Code that is syntactically incomplete"
+        },
+        "complete_code": {
+          "type": "string",
+          "description": "Complete single statement"
+        },
+        "syntax_error": {
+          "type": "string",
+          "description": "Code that causes a syntax error"
+        },
+        "input_prompt": {
+          "type": "string",
+          "description": "Code that reads input from stdin"
+        },
+        "sleep_code": {
+          "type": "string",
+          "description": "Code that sleeps for ~2 seconds (for interrupt test)"
+        },
+        "completion_var": {
+          "type": "string",
+          "description": "Variable name to use for completion test"
+        },
+        "completion_setup": {
+          "type": "string",
+          "description": "Code to define a variable for completion"
+        },
+        "completion_prefix": {
+          "type": "string",
+          "description": "Partial variable name to trigger completion"
+        },
+        "display_data_code": {
+          "type": "string",
+          "description": "Code that produces display_data (rich output)"
+        },
+        "update_display_data_code": {
+          "type": "string",
+          "description": "Code that produces display_data then updates it"
+        },
+        "rich_execute_result_code": {
+          "type": "string",
+          "description": "Code that produces execute_result with rich MIME types"
+        }
+      },
+      "required": [
+        "print_hello",
+        "print_stderr",
+        "simple_expr",
+        "simple_expr_result",
+        "incomplete_code",
+        "complete_code",
+        "syntax_error",
+        "input_prompt",
+        "sleep_code",
+        "completion_var",
+        "completion_setup",
+        "completion_prefix",
+        "display_data_code",
+        "update_display_data_code",
+        "rich_execute_result_code"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

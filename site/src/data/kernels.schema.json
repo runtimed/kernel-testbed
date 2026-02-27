@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kernels.schema.json",
+  "title": "Kernel Metadata",
+  "description": "Static metadata about Jupyter kernels tested for protocol conformance",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "kernels": {
+      "type": "object",
+      "description": "Map of kernel names to their metadata",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "implementation": {
+            "type": "string",
+            "description": "Name of the kernel implementation package"
+          },
+          "repository": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the kernel's source repository"
+          },
+          "description": {
+            "type": "string",
+            "description": "Short description of the kernel"
+          },
+          "documentation": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the kernel's documentation"
+          }
+        },
+        "required": ["implementation", "repository"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["kernels"],
+  "additionalProperties": false
+}
