@@ -1,0 +1,89 @@
+{
+  "kernels": {
+    "python3": {
+      "implementation": "ipykernel",
+      "repository": "https://github.com/ipython/ipykernel",
+      "description": "The official Python kernel for Jupyter"
+    },
+    "rust": {
+      "implementation": "evcxr",
+      "repository": "https://github.com/evcxr/evcxr",
+      "description": "A Rust REPL and Jupyter kernel"
+    },
+    "deno": {
+      "implementation": "deno",
+      "repository": "https://github.com/denoland/deno",
+      "description": "Deno's built-in Jupyter kernel"
+    },
+    "ark": {
+      "implementation": "ark",
+      "repository": "https://github.com/posit-dev/ark",
+      "description": "R kernel by Posit"
+    },
+    "scala": {
+      "implementation": "almond",
+      "repository": "https://github.com/almond-sh/almond",
+      "description": "A Scala kernel for Jupyter"
+    },
+    "julia-1.11": {
+      "implementation": "ijulia",
+      "repository": "https://github.com/JuliaLang/IJulia.jl",
+      "description": "Julia kernel for Jupyter"
+    },
+    "xcpp17": {
+      "implementation": "xeus-cling",
+      "repository": "https://github.com/jupyter-xeus/xeus-cling",
+      "description": "C++ kernel via Cling interpreter"
+    },
+    "xsql": {
+      "implementation": "xeus-sql",
+      "repository": "https://github.com/jupyter-xeus/xeus-sql",
+      "description": "SQL kernel with multiple backends"
+    },
+    "gonb": {
+      "implementation": "gonb",
+      "repository": "https://github.com/janpfeifer/gonb",
+      "description": "A Go kernel for Jupyter"
+    },
+    "xpython": {
+      "implementation": "xeus-python",
+      "repository": "https://github.com/jupyter-xeus/xeus-python",
+      "description": "Python kernel using Xeus framework"
+    },
+    "xcpp20": {
+      "implementation": "xeus-cpp",
+      "repository": "https://github.com/compiler-research/xeus-cpp",
+      "description": "C++20 kernel using Clang/LLVM"
+    },
+    "xsqlite": {
+      "implementation": "xeus-sqlite",
+      "repository": "https://github.com/jupyter-xeus/xeus-sqlite",
+      "description": "SQLite kernel for Jupyter"
+    },
+    "xr": {
+      "implementation": "xeus-r",
+      "repository": "https://github.com/jupyter-xeus/xeus-r",
+      "description": "R kernel using Xeus framework"
+    },
+    "xlua": {
+      "implementation": "xeus-lua",
+      "repository": "https://github.com/jupyter-xeus/xeus-lua",
+      "description": "Lua kernel for Jupyter"
+    },
+    "xhaskell": {
+      "implementation": "xeus-haskell",
+      "repository": "https://github.com/jupyter-xeus/xeus-haskell",
+      "description": "Haskell kernel for Jupyter"
+    },
+    "xoctave": {
+      "implementation": "xeus-octave",
+      "repository": "https://github.com/jupyter-xeus/xeus-octave",
+      "description": "GNU Octave kernel for Jupyter"
+    },
+    "ocaml-jupyter": {
+      "implementation": "ocaml-jupyter",
+      "repository": "https://github.com/akabe/ocaml-jupyter",
+      "description": "OCaml kernel for Jupyter"
+    }
+  }
+}
