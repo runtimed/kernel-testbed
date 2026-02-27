@@ -19,6 +19,20 @@ export const catppuccinColors = {
   overlay: 'var(--catppuccin-color-overlay1)',
 } as const;
 
+// Mocha hex values for server-side rendering (OG images)
+// CSS variables don't work in Satori, so we need hardcoded values
+export const catppuccinColorsMocha = {
+  blue: '#89b4fa',
+  yellow: '#f9e2af',
+  peach: '#fab387',
+  red: '#f38ba8',
+  mauve: '#cba6f7',
+  green: '#a6e3a1',
+  teal: '#94e2d5',
+  text: '#cdd6f4',
+  overlay: '#7f849c',
+} as const;
+
 export type ColorKey = keyof typeof catppuccinColors;
 
 interface PathData {
