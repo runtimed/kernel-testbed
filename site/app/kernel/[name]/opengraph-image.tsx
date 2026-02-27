@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getAllKernelNames, getKernelReport } from '@/lib/data';
 import { getPassedCount, getTotalCount, hasStartupError } from '@/types/report';
-import { iconPaths, catppuccinColors, getIconKey, type ColorKey } from '@/lib/icon-paths';
+import { iconPaths, catppuccinColorsMocha, getIconKey, type ColorKey } from '@/lib/icon-paths';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-static';
@@ -21,7 +21,7 @@ function getLanguageIconSvg(language: string, kernelName: string) {
           <path
             key={i}
             d={path.d}
-            stroke={catppuccinColors[path.color as ColorKey]}
+            stroke={catppuccinColorsMocha[path.color as ColorKey]}
           />
         ))}
       </g>
