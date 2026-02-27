@@ -43,10 +43,10 @@ export function SummaryTable({ matrix }: ConformanceMatrixProps) {
   const sortedReports = sortByScore(matrix.reports);
 
   return (
-    <div className="rounded-lg border border-ctp-surface0 overflow-x-auto bg-ctp-mantle">
+    <div className="rounded-lg border border-ctp-surface0 latte:border-ctp-surface1 overflow-x-auto bg-ctp-mantle latte:bg-ctp-base">
       <Table>
         <TableHeader>
-          <TableRow className="border-ctp-surface0 hover:bg-transparent">
+          <TableRow className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-transparent">
             <TableHead className="min-w-[150px] text-ctp-subtext0 pl-4">Kernel</TableHead>
             <TableHead className="text-center text-ctp-subtext0">Protocol</TableHead>
             {TIERS.map((tier) => (
@@ -68,7 +68,7 @@ export function SummaryTable({ matrix }: ConformanceMatrixProps) {
             return (
               <TableRow
                 key={report.kernel_name}
-                className="border-ctp-surface0 hover:bg-ctp-surface0/50 latte:hover:bg-ctp-surface1/50"
+                className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-ctp-surface0/50 latte:hover:bg-ctp-mauve/10"
               >
                 <TableCell className="font-medium pl-4 p-0">
                   <Link href={href} className="flex items-center gap-2.5 py-2 px-4">
@@ -135,15 +135,15 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
   }
 
   return (
-    <div className="rounded-lg border border-ctp-surface0 overflow-auto bg-ctp-mantle max-h-[calc(100vh-280px)]">
+    <div className="rounded-lg border border-ctp-surface0 latte:border-ctp-surface1 overflow-auto bg-ctp-mantle latte:bg-ctp-base max-h-[calc(100vh-280px)]">
       <Table>
-        <TableHeader className="sticky top-0 z-20 bg-ctp-mantle">
-          <TableRow className="border-ctp-surface0 hover:bg-transparent">
-            <TableHead className="min-w-[200px] sticky left-0 z-30 bg-ctp-mantle text-ctp-subtext0">Test</TableHead>
+        <TableHeader className="sticky top-0 z-20 bg-ctp-mantle latte:bg-ctp-base">
+          <TableRow className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-transparent">
+            <TableHead className="min-w-[200px] sticky left-0 z-30 bg-ctp-mantle latte:bg-ctp-base text-ctp-subtext0">Test</TableHead>
             {sortedReports.map((report) => {
               const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
               return (
-                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3 bg-ctp-mantle">
+                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3 bg-ctp-mantle latte:bg-ctp-base">
                   <div className="flex flex-col items-center gap-1.5">
                     <LanguageIcon className="h-5 w-5" />
                     <span className="text-xs">{report.kernel_name}</span>
@@ -171,8 +171,8 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
                 </TableRow>
                 {/* Test rows */}
                 {testsInTier.map((testName) => (
-                  <TableRow key={testName} className="border-ctp-surface0 hover:bg-ctp-surface0/30 latte:hover:bg-ctp-surface1/30">
-                    <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle text-ctp-text">
+                  <TableRow key={testName} className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-ctp-surface0/30 latte:hover:bg-ctp-mauve/10">
+                    <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle latte:bg-ctp-base text-ctp-text">
                       {testName}
                     </TableCell>
                     {sortedReports.map((report) => {
