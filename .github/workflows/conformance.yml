@@ -26,6 +26,9 @@ jobs:
           - name: ipykernel
             install: pip install ipykernel && python -m ipykernel install --user
             kernel-name: python3
+          - name: async-kernel
+            install: pip install async-kernel && async-kernel --install
+            kernel-name: async
           - name: evcxr
             install: |
               if [ -f ~/.cargo/bin/evcxr_jupyter ]; then
@@ -125,7 +128,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Set up Python
-        if: matrix.kernel.name == 'ipykernel' || matrix.kernel.name == 'ark'
+        if: matrix.kernel.name == 'ipykernel' || matrix.kernel.name == 'ark' || matrix.kernel.name == 'async-kernel'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"

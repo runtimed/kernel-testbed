@@ -85,6 +85,11 @@
       "implementation": "ocaml-jupyter",
       "repository": "https://github.com/akabe/ocaml-jupyter",
       "description": "OCaml kernel for Jupyter"
+    },
+    "async": {
+      "implementation": "async-kernel",
+      "repository": "https://github.com/fleming79/async-kernel",
+      "description": "A fully concurrent Python kernel with async support"
     }
   }
 }
