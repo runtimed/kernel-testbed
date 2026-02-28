@@ -22,7 +22,7 @@ export default async function MatrixPage() {
       <div className="min-h-screen bg-ctp-base flex flex-col">
         <Header generatedAt={data.generated_at} commitSha={data.commit_sha} currentPage="matrix" />
 
-        <main className="max-w-screen-2xl mx-auto px-4 py-4 flex-1 w-full">
+        <main className="w-full flex-1">
           <DetailedMatrix matrix={data} />
         </main>
 

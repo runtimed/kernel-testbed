@@ -135,7 +135,7 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
   }
 
   return (
-    <div className="rounded-lg border border-ctp-surface0 latte:border-ctp-surface1 overflow-auto bg-ctp-mantle latte:bg-ctp-base max-h-[calc(100vh-220px)]">
+    <div className="border-y border-ctp-surface0 latte:border-ctp-surface1 overflow-auto bg-ctp-mantle latte:bg-ctp-base max-h-[calc(100vh-220px)]">
       <Table>
         <TableHeader className="sticky top-0 z-20 bg-ctp-mantle latte:bg-ctp-base">
           <TableRow className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-transparent">
