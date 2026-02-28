@@ -27,7 +27,11 @@ jobs:
             install: pip install ipykernel && python -m ipykernel install --user
             kernel-name: python3
           - name: async-kernel
-            install: pip install async-kernel && async-kernel -a async
+            install: |
+              pip install async-kernel
+              async-kernel -a async
+              mkdir -p ~/.local/share/jupyter/kernels
+              cp -r $pythonLocation/share/jupyter/kernels/async ~/.local/share/jupyter/kernels/
             kernel-name: async
           - name: evcxr
             install: |
