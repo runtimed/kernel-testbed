@@ -1,6 +1,35 @@
 @import "tailwindcss";
 @import "@catppuccin/tailwindcss/mocha.css";
 
+html {
+  color-scheme: light dark;
+}
+
+/* Custom scrollbar styling - uses CSS vars that adapt to light/dark */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ctp-mantle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ctp-surface2);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ctp-overlay0);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ctp-surface2) var(--color-ctp-mantle);
+}
+
 /* Map shadcn semantic colors to Catppuccin */
 @theme {
   --color-background: var(--color-ctp-base);

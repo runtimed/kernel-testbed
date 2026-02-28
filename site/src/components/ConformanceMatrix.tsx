@@ -135,15 +135,15 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
   }
 
   return (
-    <div className="rounded-lg border border-ctp-surface0 latte:border-ctp-surface1 overflow-auto bg-ctp-mantle latte:bg-ctp-base max-h-[calc(100vh-280px)]">
+    <div className="rounded-lg border border-ctp-surface0 latte:border-ctp-surface1 overflow-auto bg-ctp-mantle latte:bg-ctp-base max-h-[calc(100vh-220px)]">
       <Table>
         <TableHeader className="sticky top-0 z-20 bg-ctp-mantle latte:bg-ctp-base">
           <TableRow className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-transparent">
-            <TableHead className="min-w-[200px] sticky left-0 z-30 bg-ctp-mantle latte:bg-ctp-base text-ctp-subtext0">Test</TableHead>
+            <TableHead className="min-w-[200px] sticky left-0 z-30 bg-ctp-mantle latte:bg-ctp-base text-ctp-subtext0 px-4 py-3">Test</TableHead>
             {sortedReports.map((report) => {
               const LanguageIcon = getLanguageIcon(report.kernel_name, report.language);
               return (
-                <TableHead key={report.kernel_name} className="text-center min-w-[80px] text-ctp-subtext0 py-3 bg-ctp-mantle latte:bg-ctp-base">
+                <TableHead key={report.kernel_name} className="text-center min-w-[90px] text-ctp-subtext0 px-3 py-3 bg-ctp-mantle latte:bg-ctp-base">
                   <div className="flex flex-col items-center gap-1.5">
                     <LanguageIcon className="h-5 w-5" />
                     <span className="text-xs">{report.kernel_name}</span>
@@ -162,23 +162,23 @@ export function DetailedMatrix({ matrix }: ConformanceMatrixProps) {
               <Fragment key={tier}>
                 {/* Tier header row */}
                 <TableRow className="bg-ctp-surface0 latte:bg-ctp-surface1 hover:bg-ctp-surface0 latte:hover:bg-ctp-surface1 border-ctp-surface0">
-                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0 latte:bg-ctp-surface1 text-ctp-mauve">
+                  <TableCell className="font-semibold text-xs uppercase tracking-wide sticky left-0 z-10 bg-ctp-surface0 latte:bg-ctp-surface1 text-ctp-mauve px-4 py-2">
                     {TIER_DESCRIPTIONS[tier]}
                   </TableCell>
                   {sortedReports.map((report) => (
-                    <TableCell key={report.kernel_name} className="bg-ctp-surface0 latte:bg-ctp-surface1" />
+                    <TableCell key={report.kernel_name} className="bg-ctp-surface0 latte:bg-ctp-surface1 px-3" />
                   ))}
                 </TableRow>
                 {/* Test rows */}
                 {testsInTier.map((testName) => (
                   <TableRow key={testName} className="border-ctp-surface0 latte:border-ctp-surface1 hover:bg-ctp-surface0/30 latte:hover:bg-ctp-mauve/10">
-                    <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle latte:bg-ctp-base text-ctp-text">
+                    <TableCell className="font-mono text-xs sticky left-0 z-10 bg-ctp-mantle latte:bg-ctp-base text-ctp-text px-4 py-2">
                       {testName}
                     </TableCell>
                     {sortedReports.map((report) => {
                       const test = report.results.find((t) => t.name === testName);
                       return (
-                        <TableCell key={report.kernel_name} className="text-center">
+                        <TableCell key={report.kernel_name} className="text-center px-3 py-2">
                           {test ? (
                             <TestResultIcon result={test.result} />
                           ) : (

@@ -63,9 +63,9 @@ export default async function KernelPage({ params }: KernelPageProps) {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-ctp-base">
-        <Header generatedAt={data.generated_at} commitSha={data.commit_sha} />
+        <Header generatedAt={data.generated_at} commitSha={data.commit_sha} currentPage="kernel" />
 
-        <main className="container mx-auto px-4 py-8">
+        <main className="max-w-screen-2xl mx-auto px-4 py-4 w-full">
           <a
             href="/kernel-testbed/"
             className="mb-6 text-sm text-ctp-subtext0 hover:text-ctp-text transition-colors flex items-center gap-2"

@@ -51,16 +51,18 @@ export function KernelCard({ report, href }: KernelCardProps) {
               <CardDescription className="text-ctp-subtext0 flex items-center gap-1.5">
                 {report.implementation || report.language}
                 {metadata?.repository && (
-                  <a
-                    href={metadata.repository}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(metadata.repository, '_blank', 'noopener,noreferrer');
+                    }}
                     className="text-ctp-overlay0 hover:text-ctp-blue transition-colors"
                     title="View source on GitHub"
                   >
                     <Github className="h-3.5 w-3.5" />
-                  </a>
+                  </button>
                 )}
               </CardDescription>
             </div>
