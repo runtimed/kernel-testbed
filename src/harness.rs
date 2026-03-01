@@ -13,8 +13,8 @@ use runtimelib::{
     create_client_control_connection, create_client_heartbeat_connection,
     create_client_iopub_connection, create_client_shell_connection_with_identity,
     create_client_stdin_connection_with_identity, peer_identity_for_session, peek_ports,
-    ClientControlConnection, ClientHeartbeatConnection, ClientIoPubConnection,
-    ClientShellConnection, ClientStdinConnection, KernelspecDir,
+    wait_for_iopub_welcome, ClientControlConnection, ClientHeartbeatConnection,
+    ClientIoPubConnection, ClientShellConnection, ClientStdinConnection, KernelspecDir,
 };
 use std::net::{IpAddr, Ipv4Addr};
 use std::path::PathBuf;
@@ -24,8 +24,9 @@ use thiserror::Error;
 use tokio::process::Child;
 use tokio::time::timeout;
 
-/// Time to wait for IOPub to settle after connecting
-const IOPUB_SETTLE_TIME: Duration = Duration::from_millis(100);
+/// Timeout for waiting for iopub_welcome message (JEP 65)
+/// Kernels using XPUB sockets will send this immediately, others will timeout gracefully
+const IOPUB_WELCOME_TIMEOUT: Duration = Duration::from_millis(500);
 
 #[derive(Error, Debug)]
 pub enum HarnessError {
@@ -72,6 +73,8 @@ pub struct KernelUnderTest {
     snippets: LanguageSnippets,
     /// Per-test timeout
     test_timeout: Duration,
+    /// Whether iopub_welcome was received (JEP 65 support)
+    iopub_welcome_received: bool,
 }
 
 impl KernelUnderTest {
@@ -128,7 +131,7 @@ impl KernelUnderTest {
         .await
         .map_err(|e| HarnessError::ConnectionFailed(e.to_string()))?;
 
-        let iopub = create_client_iopub_connection(&connection_info, "", &session_id)
+        let mut iopub = create_client_iopub_connection(&connection_info, "", &session_id)
             .await
             .map_err(|e| HarnessError::ConnectionFailed(e.to_string()))?;
 
@@ -145,8 +148,13 @@ impl KernelUnderTest {
             .await
             .map_err(|e| HarnessError::ConnectionFailed(e.to_string()))?;
 
-        // Wait for IOPub to settle
-        tokio::time::sleep(IOPUB_SETTLE_TIME).await;
+        // Wait for iopub_welcome (JEP 65) or timeout gracefully for legacy kernels
+        let iopub_welcome_received =
+            match wait_for_iopub_welcome(&mut iopub, IOPUB_WELCOME_TIMEOUT).await {
+                Ok(Some(_subscription)) => true,
+                Ok(None) => false, // Timeout or non-welcome message - kernel doesn't support XPUB
+                Err(_) => false,   // Error during wait - proceed anyway
+            };
 
         // Default snippets (will be updated after kernel_info)
         let snippets = LanguageSnippets::for_language("python");
@@ -164,6 +172,7 @@ impl KernelUnderTest {
             kernel_info: None,
             snippets,
             test_timeout,
+            iopub_welcome_received,
         };
 
         // Get kernel info to determine language
@@ -206,6 +215,11 @@ impl KernelUnderTest {
     /// Get language snippets.
     pub fn snippets(&self) -> &LanguageSnippets {
         &self.snippets
+    }
+
+    /// Check if iopub_welcome was received (JEP 65 support).
+    pub fn iopub_welcome_received(&self) -> bool {
+        self.iopub_welcome_received
     }
 
     /// Send a request on shell and wait for reply.
