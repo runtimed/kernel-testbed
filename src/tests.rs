@@ -30,6 +30,23 @@ fn test_heartbeat_responds(
     })
 }
 
+fn test_iopub_welcome(
+    kernel: &mut KernelUnderTest,
+) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
+    Box::pin(async move {
+        if kernel.iopub_welcome_received() {
+            TestResult::Pass
+        } else {
+            // iopub_welcome is optional (JEP 65) - kernels using legacy PUB sockets won't send it
+            TestResult::PartialPass {
+                score: 0.5,
+                notes: "No iopub_welcome received (kernel may use legacy PUB socket instead of XPUB)"
+                    .to_string(),
+            }
+        }
+    })
+}
+
 fn test_kernel_info_reply_valid(
     kernel: &mut KernelUnderTest,
 ) -> Pin<Box<dyn Future<Output = TestResult> + Send + '_>> {
@@ -879,6 +896,13 @@ pub fn all_tests() -> Vec<ConformanceTest> {
             description: "Kernel responds to heartbeat ping within timeout",
             message_type: "heartbeat",
             run: test_heartbeat_responds,
+        },
+        ConformanceTest {
+            name: "iopub_welcome",
+            category: TestCategory::Tier1Basic,
+            description: "Kernel sends iopub_welcome on XPUB subscription (JEP 65)",
+            message_type: "iopub_welcome",
+            run: test_iopub_welcome,
         },
         ConformanceTest {
             name: "kernel_info_reply_valid",
