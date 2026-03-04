@@ -516,7 +516,7 @@ dependencies = [
 [[package]]
 name = "jupyter-protocol"
 version = "1.4.0"
-source = "git+https://github.com/runtimed/runtimed?branch=main#302c4a2b9f4358c93747ae23558a6e955d86ef15"
+source = "git+https://github.com/runtimed/runtimed?branch=main#4de02f844509c2bf39d4ad7d8b70d838baa365bd"
 dependencies = [
  "async-trait",
  "bytes",
@@ -775,7 +775,7 @@ dependencies = [
 [[package]]
 name = "runtimelib"
 version = "1.4.0"
-source = "git+https://github.com/runtimed/runtimed?branch=main#302c4a2b9f4358c93747ae23558a6e955d86ef15"
+source = "git+https://github.com/runtimed/runtimed?branch=main#4de02f844509c2bf39d4ad7d8b70d838baa365bd"
 dependencies = [
  "base64",
  "bytes",
@@ -1495,9 +1495,9 @@ dependencies = [
 
 [[package]]
 name = "zeromq"
-version = "0.5.0"
+version = "0.6.0-pre.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b32e1e46c4e278efd0c1153f2db0113924b9bc5fff9f9221853d035e2d26fadf"
+checksum = "f06ccf13d2d6709a7463d175b88598c88a5dc63c8907ffb6f32a8a16baf77c1f"
 dependencies = [
  "async-trait",
  "asynchronous-codec",
