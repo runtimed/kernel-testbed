@@ -1,4 +1,4 @@
-# kernel-testbed
+# Kernel Testbed
 
 Jupyter kernel protocol conformance test suite.
 
