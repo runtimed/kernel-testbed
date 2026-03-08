@@ -51,7 +51,7 @@ jobs:
           - name: ark
             install: |
               # Download Ark binary from GitHub releases
-              curl -fsSL -o ark.zip https://github.com/posit-dev/ark/releases/download/0.1.232/ark-0.1.232-linux-x64.zip
+              curl -fsSL -o ark.zip https://github.com/posit-dev/ark/releases/download/0.1.238/ark-0.1.238-linux-x64.zip
               unzip -o ark.zip
               chmod +x ark
               sudo mv ark /usr/local/bin/
