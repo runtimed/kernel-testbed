@@ -60,10 +60,10 @@ jobs:
             kernel-name: ark
           - name: almond
             install: |
-              curl -Lo coursier https://git.io/coursier-cli
-              chmod +x coursier
-              ./coursier launch almond -- --install
-              rm -f coursier
+              curl -fLo cs https://github.com/coursier/coursier/releases/latest/download/coursier
+              chmod +x cs
+              ./cs launch --use-bootstrap almond -- --install
+              rm -f cs
             kernel-name: scala
           - name: ijulia
             install: julia -e 'using Pkg; Pkg.add("IJulia"); using IJulia'
