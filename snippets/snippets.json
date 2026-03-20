@@ -15,7 +15,7 @@
       "completion_setup": "test_variable_for_completion = 42",
       "completion_prefix": "test_variable_for_",
       "display_data_code": "from IPython.display import display, HTML; display(HTML('<b>bold</b>'))",
-      "update_display_data_code": "from IPython.display import display, HTML, update_display; dh = display(HTML('<b>initial</b>'), display_id=True); update_display(HTML('<b>updated</b>'), display_id=dh.display_id)",
+      "update_display_data_code": "from IPython.display import display, HTML, update_display; dh = display(HTML('<b>initial</b>'), display_id=True); update_display(HTML('<b>✨ updated ✨</b>'), display_id=dh.display_id)",
       "rich_execute_result_code": "from IPython.display import HTML; HTML('<b>bold</b>')"
     },
     "r": {
