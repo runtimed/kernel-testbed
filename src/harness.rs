@@ -110,14 +110,40 @@ impl KernelUnderTest {
             .map_err(|e| HarnessError::LaunchFailed(e.to_string()))?;
         tokio::fs::write(&connection_path, content).await?;
 
-        // Launch kernel process
-        let process = kernelspec
-            .command(&connection_path, Some(Stdio::null()), Some(Stdio::null()))?
+        // Launch kernel process (capture stderr for diagnostics)
+        let mut process = kernelspec
+            .command(&connection_path, Some(Stdio::null()), Some(Stdio::piped()))?
             .spawn()
             .map_err(|e| HarnessError::LaunchFailed(e.to_string()))?;
 
         // Give kernel time to start
-        tokio::time::sleep(Duration::from_millis(500)).await;
+        tokio::time::sleep(Duration::from_millis(2000)).await;
+
+        // Check if kernel process has already exited (crashed during startup)
+        match process.try_wait() {
+            Ok(Some(exit_status)) => {
+                // Process has already exited - read stderr for diagnostics
+                let mut stderr_output = String::new();
+                if let Some(stderr) = process.stderr.take() {
+                    use tokio::io::AsyncReadExt;
+                    let mut reader = tokio::io::BufReader::new(stderr);
+                    let _ = reader.read_to_string(&mut stderr_output).await;
+                }
+                let msg = if stderr_output.is_empty() {
+                    format!("Kernel process exited with {} before connections could be established", exit_status)
+                } else {
+                    format!("Kernel process exited with {} before connections could be established. Stderr:\n{}", exit_status, stderr_output)
+                };
+                eprintln!("{}", msg);
+                return Err(HarnessError::LaunchFailed(msg));
+            }
+            Ok(None) => {
+                // Process still running - good
+            }
+            Err(e) => {
+                eprintln!("Warning: could not check kernel process status: {}", e);
+            }
+        }
 
         // Create peer identity for shell/stdin (must share identity)
         let identity = peer_identity_for_session(&session_id)?;
@@ -182,29 +208,59 @@ impl KernelUnderTest {
     }
 
     /// Fetch kernel_info and update snippets.
+    ///
+    /// Retries the kernel_info_request up to 3 times to handle slow-starting
+    /// kernels (e.g., xeus-octave) where the initial request may be sent before
+    /// the kernel has bound to its ports.
     async fn fetch_kernel_info(&mut self) -> Result<()> {
-        let request: JupyterMessage = KernelInfoRequest {}.into();
-        self.shell
-            .send(request)
-            .await
-            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+        let max_attempts = 3;
+        let mut last_error = None;
 
-        // Read reply with timeout
-        let reply = timeout(self.test_timeout, self.shell.read())
-            .await
-            .map_err(|_| HarnessError::Timeout("kernel_info_reply".to_string()))?
-            .map_err(|e| HarnessError::ProtocolError(e.to_string()))?;
+        for attempt in 0..max_attempts {
+            if attempt > 0 {
+                // Wait longer between retries to give the kernel time to start
+                tokio::time::sleep(Duration::from_secs(2)).await;
+            }
 
-        if let JupyterMessageContent::KernelInfoReply(info) = reply.content {
-            self.snippets = LanguageSnippets::for_language(&info.language_info.name);
-            self.kernel_info = Some(*info);
-            Ok(())
-        } else {
-            Err(HarnessError::ProtocolError(format!(
-                "Expected kernel_info_reply, got {:?}",
-                reply.content.message_type()
-            )))
+            let request: JupyterMessage = KernelInfoRequest {}.into();
+            if let Err(e) = self.shell.send(request).await {
+                last_error = Some(HarnessError::ProtocolError(e.to_string()));
+                continue;
+            }
+
+            match timeout(self.test_timeout, self.shell.read()).await {
+                Ok(Ok(reply)) => {
+                    if let JupyterMessageContent::KernelInfoReply(info) = reply.content {
+                        self.snippets =
+                            LanguageSnippets::for_language(&info.language_info.name);
+                        self.kernel_info = Some(*info);
+                        return Ok(());
+                    } else {
+                        return Err(HarnessError::ProtocolError(format!(
+                            "Expected kernel_info_reply, got {:?}",
+                            reply.content.message_type()
+                        )));
+                    }
+                }
+                Ok(Err(e)) => {
+                    eprintln!("  kernel_info attempt {}: protocol error: {}", attempt + 1, e);
+                    last_error = Some(HarnessError::ProtocolError(e.to_string()));
+                }
+                Err(_) => {
+                    eprintln!("  kernel_info attempt {}: timeout", attempt + 1);
+                    last_error = Some(HarnessError::Timeout("kernel_info_reply".to_string()));
+                }
+            }
         }
+
+        // Try to capture kernel stderr for diagnostics
+        if let Some(stderr) = self.try_read_stderr().await {
+            if !stderr.is_empty() {
+                eprintln!("Kernel stderr output:\n{}", stderr);
+            }
+        }
+
+        Err(last_error.unwrap_or_else(|| HarnessError::Timeout("kernel_info_reply".to_string())))
     }
 
     /// Get kernel info.
@@ -508,6 +564,27 @@ impl KernelUnderTest {
         Ok(())
     }
 
+    /// Try to read any stderr output from the kernel process (for diagnostics).
+    pub async fn try_read_stderr(&mut self) -> Option<String> {
+        if let Some(stderr) = self.process.stderr.take() {
+            use tokio::io::AsyncReadExt;
+            let mut buf = Vec::new();
+            let mut reader = tokio::io::BufReader::new(stderr);
+            let _ = tokio::time::timeout(
+                Duration::from_millis(100),
+                reader.read_to_end(&mut buf),
+            )
+            .await;
+            if !buf.is_empty() {
+                Some(String::from_utf8_lossy(&buf).to_string())
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     /// Shutdown the kernel cleanly.
     pub async fn shutdown(mut self) -> Result<()> {
         let request = ShutdownRequest { restart: false };
@@ -556,10 +633,12 @@ pub async fn run_conformance_suite(
         Ok(k) => k,
         Err(e) => {
             // Kernel failed during startup - return a partial report
+            let error_msg = e.to_string();
+            eprintln!("Kernel startup failed: {}", error_msg);
             return KernelReport::new_failed_at_startup(
                 kernel_name,
                 language,
-                e.to_string(),
+                error_msg,
                 start.elapsed(),
             );
         }

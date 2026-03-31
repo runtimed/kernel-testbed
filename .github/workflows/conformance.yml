@@ -232,6 +232,14 @@ jobs:
         if: matrix.kernel.name == 'xeus-octave'
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
+      - name: Configure Octave environment
+        if: matrix.kernel.name == 'xeus-octave'
+        run: |
+          # xeus-octave needs OCTAVE_HOME so Octave can find its .m scripts
+          # (e.g., graphics_toolkit). The conda prefix contains all Octave files.
+          echo "OCTAVE_HOME=$MAMBA_ROOT_PREFIX" >> $GITHUB_ENV
+          echo "OCTAVE_EXEC_PREFIX=$MAMBA_ROOT_PREFIX" >> $GITHUB_ENV
+
       - name: Build test suite
         run: cargo build --release
 
@@ -242,6 +250,7 @@ jobs:
         run: |
           if [ "${{ matrix.kernel.name }}" = "xeus-octave" ]; then
             xvfb-run -a ./target/release/jupyter-kernel-test ${{ matrix.kernel.kernel-name }} \
+              --timeout 30000 \
               --format json \
               --output ${{ matrix.kernel.name }}-report.json
           else
@@ -254,7 +263,7 @@ jobs:
       - name: Display results
         run: |
           if [ "${{ matrix.kernel.name }}" = "xeus-octave" ]; then
-            xvfb-run -a ./target/release/jupyter-kernel-test ${{ matrix.kernel.kernel-name }} || true
+            xvfb-run -a ./target/release/jupyter-kernel-test ${{ matrix.kernel.kernel-name }} --timeout 30000 || true
           else
             ./target/release/jupyter-kernel-test ${{ matrix.kernel.kernel-name }} || true
           fi
