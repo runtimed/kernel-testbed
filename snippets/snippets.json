@@ -128,7 +128,7 @@
       "incomplete_code": "int foo(",
       "complete_code": "int x = 1;",
       "syntax_error": "int int;",
-      "input_prompt": "// C++ kernel stdin varies",
+      "input_prompt": "#include <iostream>\n#include <string>\nstd::string name;\nstd::cin >> name;",
       "sleep_code": "#include <thread>\n#include <chrono>\nstd::this_thread::sleep_for(std::chrono::seconds(2));",
       "completion_var": "test_variable_for_completion",
       "completion_setup": "int test_variable_for_completion = 42;",
