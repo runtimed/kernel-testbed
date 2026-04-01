@@ -128,13 +128,13 @@
       "incomplete_code": "int foo(",
       "complete_code": "int x = 1;",
       "syntax_error": "int int;",
-      "input_prompt": "// C++ kernel stdin varies",
+      "input_prompt": "#include <iostream>\n#include <string>\nstd::string name;\nstd::cin >> name;",
       "sleep_code": "#include <thread>\n#include <chrono>\nstd::this_thread::sleep_for(std::chrono::seconds(2));",
       "completion_var": "test_variable_for_completion",
       "completion_setup": "int test_variable_for_completion = 42;",
       "completion_prefix": "test_variable_for_",
       "display_data_code": "#include <string>\n#include \"xcpp/xdisplay.hpp\"\n\nstruct html_content {\n    std::string content;\n};\n\n#include \"nlohmann/json.hpp\"\nnlohmann::json mime_bundle_repr(const html_content& h) {\n    auto bundle = nlohmann::json::object();\n    bundle[\"text/html\"] = h.content;\n    return bundle;\n}\n\nhtml_content h{\"<b>bold</b>\"};\nxcpp::display(h);",
-      "update_display_data_code": "// xeus-cling update_display_data requires display_id handling",
+      "update_display_data_code": "#include <string>\n#include \"xcpp/xdisplay.hpp\"\n#include \"nlohmann/json.hpp\"\nnamespace nl = nlohmann;\nnamespace ht\n{\nstruct html\n{\ninline html(const std::string& content)\n{\nm_content = content;\n}\nstd::string m_content;\n};\nnl::json mime_bundle_repr(const html& a)\n{\nauto bundle = nl::json::object();\nbundle[\"text/html\"] = a.m_content;\nreturn bundle;\n}\n}\nht::html rect(R\"(\n<div style='\n    width: 90px;\n    height: 50px;\n    line-height: 50px;\n    background-color: blue;\n    color: white;\n    text-align: center;'>\nOriginal\n</div>)\");\nxcpp::display(rect, \"some_display_id\");\nrect.m_content = R\"(\n<div style='\n    width: 90px;\n    height: 50px;\n    line-height: 50px;\n    background-color: red;\n    color: white;\n    text-align: center;'>\nUpdated\n</div>)\";xcpp::display(rect, \"some_display_id\", true);",
       "rich_execute_result_code": "// C++ uses display_data for rich output"
     },
     "sql": {
@@ -157,7 +157,7 @@
     "lua": {
       "print_hello": "print('hello')",
       "print_stderr": "io.stderr:write('error\\n')",
-      "simple_expr": "return 1 + 1",
+      "simple_expr": "1 + 1",
       "simple_expr_result": "2",
       "incomplete_code": "function foo(",
       "complete_code": "x = 1",
