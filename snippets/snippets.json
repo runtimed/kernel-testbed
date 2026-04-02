@@ -196,7 +196,7 @@
       "incomplete_code": "if true",
       "complete_code": "x = 1;",
       "syntax_error": "1 +",
-      "input_prompt": "% Octave stdin doesn't support Jupyter input protocol",
+      "input_prompt": "name = input(\"Enter: \")",
       "sleep_code": "pause(2)",
       "completion_var": "test_variable_for_completion",
       "completion_setup": "test_variable_for_completion = 42;",
