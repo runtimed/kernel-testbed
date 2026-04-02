@@ -701,7 +701,11 @@ fn test_stdin_input_request(
             return TestResult::Unsupported;
         }
 
-        let mock_input = "test_input_42";
+        // Mock input includes quotes to ensure validity in languages like
+        // GNU Octave, where unquoted undefined variables (e.g. `test_input_42`)
+        // would cause a kernel error.
+        // TODO: Make mock input language-dependent for robustness.
+        let mock_input = "\"test_input_42\"";
 
         match kernel.execute_with_stdin(&code, mock_input).await {
             Ok((reply, _iopub, received_input_request)) => {
