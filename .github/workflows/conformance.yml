@@ -96,7 +96,7 @@ jobs:
             install: micromamba install -y xeus-r -c conda-forge
             kernel-name: xr
           - name: xeus-lua
-            install: micromamba install -y "xeus-lua>=0.10.1" -c conda-forge
+            install: micromamba install -y "xeus-lua>=0.10.1" -c conda-forge -c staged-recipes
             kernel-name: xlua
           - name: xeus-haskell
             install: |
