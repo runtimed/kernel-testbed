@@ -388,11 +388,19 @@ jobs:
             done
           } | tee -a $GITHUB_STEP_SUMMARY > summary.md
 
-      - name: Comment on PR
+      - name: Save PR number for comment workflow
         if: github.event_name == 'pull_request'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh pr comment ${{ github.event.pull_request.number }} --body-file summary.md
+        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+      - name: Upload PR comment payload
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-comment
+          path: |
+            summary.md
+            pr_number.txt
+          if-no-files-found: error
 
       - name: Upload combined reports
         uses: actions/upload-artifact@v4

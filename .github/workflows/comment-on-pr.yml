@@ -1,0 +1,32 @@
+name: Comment PR with Conformance Results
+
+on:
+  workflow_run:
+    workflows: ["Kernel Conformance"]
+    types:
+      - completed
+
+permissions:
+  pull-requests: write
+  actions: read
+
+jobs:
+  comment:
+    name: Post conformance summary
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+    steps:
+      - name: Download PR comment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: pr-comment
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          PR=$(cat pr_number.txt)
+          gh pr comment "$PR" --body-file summary.md
