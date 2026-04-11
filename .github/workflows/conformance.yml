@@ -93,7 +93,7 @@ jobs:
             install: micromamba install -y xeus-r -c conda-forge
             kernel-name: xr
           - name: xeus-lua
-            install: micromamba install -y xeus-lua -c conda-forge
+            install: micromamba install -y "xeus-lua>=0.10.1" -c conda-forge
             kernel-name: xlua
           - name: xeus-haskell
             install: |
@@ -166,6 +166,8 @@ jobs:
           micromamba-version: 'latest'
           environment-name: kernel
           init-shell: bash
+          cache-environment: false
+          cache-downloads: false
           create-args: >-
             python=3.12
             jupyter_client

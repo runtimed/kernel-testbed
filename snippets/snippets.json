@@ -163,13 +163,13 @@
       "complete_code": "x = 1",
       "syntax_error": "function function",
       "input_prompt": "io.read()",
-      "sleep_code": "-- Lua sleep requires os.execute or socket",
+      "sleep_code": "function sleep(t)local start = os.time();repeat until os.time() > start + t end;sleep(1)",
       "completion_var": "test_variable_for_completion",
       "completion_setup": "test_variable_for_completion = 42",
       "completion_prefix": "test_variable_for_",
-      "display_data_code": "ilua.display.html('<b>bold</b>')",
-      "update_display_data_code": "-- Lua doesn't support update_display_data",
-      "rich_execute_result_code": "// Lua uses display_data for rich output"
+      "display_data_code": "ilua.display.display_data(ilua.display.html('<b>bold</b>'))",
+      "update_display_data_code": "ilua.display.display_data(ilua.display.html('<b>hello</b>'), {}, {display_id = 'id1'} )\nilua.display.update_display_data(ilua.display.html('<b>world</b>'), {}, {display_id = 'id1'} )",
+      "rich_execute_result_code": "ilua.display.html('<b>world</b>')"
     },
     "haskell": {
       "print_hello": "putStrLn \"hello\"",
